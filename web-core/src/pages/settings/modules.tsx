@@ -1,0 +1,32 @@
+import type { NextPage } from 'next'
+import Head from 'next/head'
+import { Grid } from '@mui/material'
+import SafeModules from '@/components/settings/SafeModules'
+import TransactionGuards from '@/components/settings/TransactionGuards'
+import SettingsHeader from '@/components/settings/SettingsHeader'
+
+const Modules: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>Safe – Settings – Modules</title>
+      </Head>
+
+      <SettingsHeader />
+
+      <main>
+        <Grid container direction="column" spacing={2}>
+          <Grid item>
+            <SafeModules />
+          </Grid>
+
+          <Grid item>
+            <TransactionGuards />
+          </Grid>
+        </Grid>
+      </main>
+    </>
+  )
+}
+
+export default Modules

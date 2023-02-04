@@ -1,0 +1,118 @@
+@import url(./vars.css);
+@import url(./onboard.css);
+
+@font-face {
+  font-family: 'DM Sans';
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/dm-sans-v11-latin-ext-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-display: swap;
+  font-weight: bold;
+  src: url('/fonts/dm-sans-v11-latin-ext-700.woff2') format('woff2');
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: DM Sans, sans-serif;
+  background-color: var(--color-background-paper);
+}
+
+main {
+  width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 5px auto Highlight;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --header-inner-height: 52px;
+}
+
+:root {
+  --header-height: var(--header-inner-height);
+  --footer-height: 67px;
+}
+
+.psaBanner:root {
+  --header-height: calc(var(--header-inner-height) * 2);
+}
+
+/* On mobile, the banner text is two lines + padding */
+@media (max-width: 600px) {
+  .psaBanner:root {
+    --header-height: calc(var(--header-inner-height) * 2 + 16px);
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.illustration-main-fill {
+  fill: var(--color-primary-main);
+}
+
+.illustration-light-fill {
+  fill: var(--color-border-main);
+}
+
+.illustration-background-fill {
+  fill: var(--color-logo-background);
+}
+
+/* Note: a fallback `stroke` property must be on the svg to work */
+.illustration-main-stroke {
+  stroke: var(--color-primary-main);
+}
+
+.illustration-light-stroke {
+  stroke: var(--color-border-main);
+}
+
+.illustration-background-stroke {
+  stroke: var(--color-logo-background);
+}
+
+@media (max-width: 600px) {
+  .sticky {
+    position: sticky;
+    right: 0;
+    background: var(--color-background-paper);
+  }
+}
+
+body.beamerAnnouncementBarTopActive {
+  padding-top: 0 !important;
+}
+
+#beamerLastPostTitle {
+  left: 330px !important;
+}
