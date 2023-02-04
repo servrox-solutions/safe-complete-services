@@ -63,3 +63,10 @@ services:
     depends_on:
       - web
 
+  # web-core
+  ui:
+    build: ./web-core/
+    env_file:
+      - ./web-core/.env.example
+    ports:
+      - "3000:3000"
