@@ -30,6 +30,7 @@ CACHES = {
         },
     }
 }
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["*"])
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------

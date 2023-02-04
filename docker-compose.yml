@@ -2,6 +2,7 @@ version: "3.9"
 
 volumes:
   nginx-shared:
+  transaction-nginx-shared:
 
 services:
   config-nginx:
@@ -22,7 +23,7 @@ services:
     volumes:
       - ./safe-config-service/data/db:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
   web:
     build: ./safe-config-service/
     tty: true
@@ -70,3 +71,84 @@ services:
       - ./web-core/.env.example
     ports:
       - "3000:3000"
+
+  # safe-transaction-service
+  transaction-nginx:
+    image: nginx:alpine
+    hostname: nginx # TODO?
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./safe-transaction-service/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - transaction-nginx-shared:/nginx
+    depends_on:
+      - transaction-web
+
+  transaction-redis:
+    image: redis:alpine
+    ports:
+      - "6380:6380"
+    command:
+      - --appendonly yes
+
+  rabbitmq:
+    image: rabbitmq:alpine
+
+  transaction-db:
+    image: postgres:13-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  transaction-web:
+    build:
+      context: ./safe-transaction-service
+      dockerfile: docker/web/Dockerfile
+    env_file:
+      - ./safe-transaction-service/.env.dev
+    depends_on:
+      - transaction-db
+      - transaction-redis
+    working_dir: /app
+    ports:
+      - "8888:8888"
+    volumes:
+      - transaction-nginx-shared:/nginx
+    command: docker/web/run_web.sh
+
+  indexer-worker: &worker
+    build:
+      context: ./safe-transaction-service
+      dockerfile: docker/web/Dockerfile
+    env_file:
+      - ./safe-transaction-service/.env.dev
+    environment:
+      RUN_MIGRATIONS: 1
+      WORKER_QUEUES: "default,indexing"
+    depends_on:
+      - transaction-db
+      - transaction-redis
+      - rabbitmq
+    command: docker/web/celery/worker/run.sh
+
+  contracts-tokens-worker:
+    <<: *worker
+    environment:
+      WORKER_QUEUES: "contracts,tokens"
+
+  notifications-webhooks-worker:
+    <<: *worker
+    environment:
+      WORKER_QUEUES: "notifications,webhooks"
+
+  scheduler:
+    <<: *worker
+    command: docker/web/celery/scheduler/run.sh
+
+  flower:
+    <<: *worker
+    command: docker/web/celery/flower/run.sh
+    ports:
+      - "5555:5555"

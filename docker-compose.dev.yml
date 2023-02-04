@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  transaction-web:
+    build:
+      context: ./safe-transaction-service
+      dockerfile: docker/web/Dockerfile
+    env_file:
+      - ./safe-transaction-service/.env.dev
+    depends_on:
+      - transaction-db
+      - transaction-redis
+    working_dir: /app
+    ports:
+      - "8888:8888"
+    volumes:
+      - transaction-nginx-shared:/nginx
+    command: docker/web/run_web.sh
+
+  worker: &worker
+    build:
+      context: ./safe-transaction-service
+      dockerfile: docker/web/Dockerfile
+    env_file:
+      - ./safe-transaction-service/.env.dev
+    depends_on:
+      - transaction-db
+      - transaction-redis
+    command: docker/web/celery/worker/run.sh
+
+  ganache:
+    image: trufflesuite/ganache:latest
+    command: --defaultBalanceEther 10000 --gasLimit 10000000 -a 10 --chain.chainId 1337 --chain.networkId 1337 -d --host 0.0.0.0
+    ports:
+      - "8545:8545"

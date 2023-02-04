@@ -1,5 +1,7 @@
 # safe-complete-services
 
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
 ## Setup
 
 
@@ -31,3 +33,27 @@ cp ./safe-client-gateway/.env.sample ./safe-client-gateway/.dev.env
     server gateway-web:${ROCKET_PORT} fail_timeout=0;
     keepalive 32;
   }
+
+
+safe-transaction-service/docker/web/run_web.sh
+-> add django account creation
+
+safe-transaction-service/.env.dev
+-> add envs
+
+change port for second db to 5432 (transaction-db)
+
+change transaction-redis port to 6380 in yml + ./safe-complete-services/safe-transaction-service/.env.dev
+
+replace db to transaction-db -> DATABASE_URL=psql://postgres:postgres@transaction-db:5433/postgres
+
+     -Q "${WORKER_QUEUES}"
+
+# TODO: remove this line from safe-transaction-service/.env.dev as it should be passed in docker-compose.yaml for each worker instance separatly
+WORKER_QUEUES="contracts,tokens"
+
+
+
+# TODO
+* delete csrf
+* fix WORKER_QUEUES
