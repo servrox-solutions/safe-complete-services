@@ -4,7 +4,7 @@ volumes:
   nginx-shared:
 
 services:
-  nginx:
+  config-nginx:
     image: nginx:1.20-alpine
     env_file:
       - ./safe-config-service/.dev.env
@@ -34,3 +34,32 @@ services:
       - POSTGRES_HOST=db
     depends_on:
       - db
+
+  # safe-client-gateway services
+  nginx:
+    image: nginx:1.21-alpine
+    env_file:
+      - ./safe-client-gateway/.dev.env
+    ports:
+      - "${NGINX_HOST_PORT:-8090}:80"
+    volumes:
+      - ./safe-client-gateway/nginx/templates:/etc/nginx/templates
+    depends_on:
+      - gateway-web
+
+  gateway-web:
+    build: ./safe-client-gateway/
+    env_file:
+      - ./safe-client-gateway/.dev.env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:6-alpine
+    env_file:
+      - ./safe-client-gateway/.dev.env
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+    depends_on:
+      - web
+
