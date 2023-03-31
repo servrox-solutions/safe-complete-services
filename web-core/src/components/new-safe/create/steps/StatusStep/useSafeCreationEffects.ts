@@ -25,7 +25,7 @@ const useSafeCreationEffects = ({
   useEffect(() => {
     if (status === SafeCreationStatus.SUCCESS) {
       trackEvent(CREATE_SAFE_EVENTS.CREATED_SAFE)
-
+debugger;
       // Add the Safe and add names to the address book
       if (pendingSafe && pendingSafe.safeAddress) {
         dispatch(

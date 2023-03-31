@@ -1,0 +1,9 @@
+{
+  "l1": {
+    "apiaddress": "https://api.testnet.shimmer.network",
+    "faucetaddress": "https://faucet.testnet.shimmer.network"
+  },
+  "wallet": {
+    "seed": "5G5qS1Fm92MkxaWL1nqTSGHYkGZxXWxKFjzkNLrWv5VQ"
+  }
+}

@@ -19,11 +19,12 @@ const argv = yargs
 dotenv.config();
 const { NODE_URL, INFURA_KEY, MNEMONIC, ETHERSCAN_API_KEY, PK, SOLIDITY_VERSION, SOLIDITY_SETTINGS } = process.env;
 
-const DEFAULT_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+// const DEFAULT_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+const DEFAULT_MNEMONIC = "choice pair gloom cage dove magnet program learn abstract fork escape impulse";
 
 const sharedNetworkConfig: HttpNetworkUserConfig = {};
 if (PK) {
-    sharedNetworkConfig.accounts = [PK];
+    sharedNetworkConfig.accounts = [ ];
 } else {
     sharedNetworkConfig.accounts = {
         mnemonic: MNEMONIC || DEFAULT_MNEMONIC,
@@ -43,7 +44,8 @@ const primarySolidityVersion = SOLIDITY_VERSION || "0.7.6";
 const soliditySettings = !!SOLIDITY_SETTINGS ? JSON.parse(SOLIDITY_SETTINGS) : undefined;
 
 const deterministicDeployment = (network: string) => {
-    const info = getSingletonFactoryInfo(parseInt(network));
+    console.log(network)
+    const info = getSingletonFactoryInfo(+network);
     if (!info) {
         throw new Error(`
         Safe factory not found for network ${network}. You can request a new deployment at https://github.com/safe-global/safe-singleton-factory.
@@ -73,6 +75,13 @@ const userConfig: HardhatUserConfig = {
             allowUnlimitedContractSize: true,
             blockGasLimit: 100000000,
             gas: 100000000,
+        },
+        avalancheCChain: {
+            ...sharedNetworkConfig,
+            url: `https://api.avax-test.network/ext/bc/C/rpc`,
+            gasPrice: 100000000000,
+            gas: 2100000,
+            blockGasLimit: 100000,
         },
         mainnet: {
             ...sharedNetworkConfig,
@@ -118,13 +127,17 @@ const userConfig: HardhatUserConfig = {
             ...sharedNetworkConfig,
             url: `https://api.avax.network/ext/bc/C/rpc`,
         },
+        shimmer: {
+            ...sharedNetworkConfig,
+            url: `https://json-rpc.evm.testnet.shimmer.network/`,
+        },
     },
     deterministicDeployment,
     namedAccounts: {
         deployer: 0,
     },
     mocha: {
-        timeout: 2000000,
+        timeout: 200000000,
     },
     etherscan: {
         apiKey: ETHERSCAN_API_KEY,
@@ -134,6 +147,7 @@ if (NODE_URL) {
     userConfig.networks!!.custom = {
         ...sharedNetworkConfig,
         url: NODE_URL,
+        timeout: 20000000,
     };
 }
 export default userConfig;

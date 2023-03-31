@@ -65,12 +65,12 @@ services:
       - web
 
   # web-core
-  ui:
-    build: ./web-core/
-    env_file:
-      - ./web-core/.env.example
-    ports:
-      - "3000:3000"
+#  ui:
+#    build: ./web-core/
+#    env_file:
+#      - ./web-core/.env.example
+#    ports:
+#      - "3000:3000"
 
   # safe-transaction-service
   transaction-nginx:
@@ -87,7 +87,7 @@ services:
   transaction-redis:
     image: redis:alpine
     ports:
-      - "6380:6380"
+      - "6380:6379"
     command:
       - --appendonly yes
 

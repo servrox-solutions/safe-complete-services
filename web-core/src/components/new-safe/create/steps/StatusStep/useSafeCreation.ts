@@ -64,6 +64,7 @@ export const useSafeCreation = (
     try {
       const tx = await getSafeCreationTxInfo(provider, pendingSafe, chain, wallet)
 
+      debugger;
       const safeParams = getSafeDeployProps(
         {
           threshold: pendingSafe.threshold,
