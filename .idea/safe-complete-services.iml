@@ -2,7 +2,9 @@
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/helm/safe/charts" />
+    </content>
     <content url="file://$MODULE_DIR$/safe-contracts/node_modules" />
     <content url="file://$MODULE_DIR$/safe-singleton-factory/node_modules" />
     <content url="file://$MODULE_DIR$/web-core/node_modules" />

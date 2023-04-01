@@ -1,0 +1,7 @@
+apiVersion: v2
+name: safe
+version: 0.1.0
+dependencies:
+  - name: postgresql
+    version: "12.2.6"
+    repository: "https://charts.bitnami.com/bitnami"

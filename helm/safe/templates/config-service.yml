@@ -1,0 +1,172 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: config
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+    - host: config.{{ .Values.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: config
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - config.{{ .Values.domain }}
+      secretName: tls-cert
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config
+  labels:
+    service: config
+spec:
+  selector:
+    app: config
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: config
+  name: config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config
+  template:
+    metadata:
+      annotations:
+        # enforce pod restart when nginx config changes
+        checksum/proxy-config: {{ .Files.Get "files/config-service/nginx.conf.template" | sha256sum }}
+      labels:
+        app: config
+    spec:
+      initContainers:
+        - name: db-create
+          image: bitnami/postgresql:15.2.0-debian-11-r14
+          command: [ bash ]
+          args:
+            - -c
+            - |
+              while ! pg_isready; do
+                echo waiting for postgres to become ready
+                sleep 1
+              done
+              createdb config_service || true
+          env:
+            - name: PGHOST
+              value: postgresql
+            - name: PGUSER
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: postgres-password
+      containers:
+        - name: django
+          image: {{ .Values.config_service.image.name }}:{{ .Values.config_service.image.version }}
+          env:
+            - name: DEBUG
+              value: {{ .Values.config_service.django.debug | quote }}
+            - name: DOCKER_NGINX_VOLUME_ROOT
+              value: /nginx
+            - name: POSTGRES_HOST
+              value: postgresql
+            - name: POSTGRES_NAME
+              value: config_service
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: postgres-password
+            - name: GUNICORN_BIND_SOCKET
+              value: "unix:/gunicorn/gunicorn.socket"
+            - name: GUNICORN_BIND_PORT
+              value: "8000"
+            - name: SECRET_KEY
+              # TODO use secret
+              value: supersecretkey
+            - name: DJANGO_ALLOWED_HOSTS
+              value: "config.{{ .Values.domain }}"
+            - name: CSRF_TRUSTED_ORIGINS
+              value: "http://localhost:80"
+          resources:
+            # TODO less RAM
+            requests:
+              cpu: 200m
+              memory: 1000Mi
+            limits:
+              cpu: 500m
+              memory: 1000Mi
+          volumeMounts:
+            - name: staticfiles
+              # TODO instruct django to generate static files into this dir, or adjust mountpath
+              mountPath: /app/staticfiles
+            - name: gunicorn
+              mountPath: /gunicorn
+
+        - name: nginx
+          image: nginx:stable-alpine3.17
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: DOCKER_NGINX_VOLUME_ROOT
+              value: /www
+            - name: GUNICORN_BIND_SOCKET
+              value: unix:/gunicorn/gunicorn.socket
+            - name: NGINX_ENVSUBST_OUTPUT_DIR
+              value: /etc/nginx
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 150Mi
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/templates
+            - name: staticfiles
+              mountPath: /nginx/staticfiles
+            - name: gunicorn
+              mountPath: /gunicorn
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: config-service-nginx
+        - name: staticfiles
+          emptyDir: {}
+        - name: gunicorn
+          emptyDir: {}
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-service-nginx
+  labels:
+    app: config
+data:
+  nginx.conf.template: |-
+{{ .Files.Get "files/config-service/nginx.conf.template" | indent 4 }}
