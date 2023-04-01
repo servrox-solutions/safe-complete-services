@@ -4,6 +4,10 @@ config_service:
   django:
     # set to false in prod
     debug: true
+    superuser:
+      username: admin
+      password: siukoob8fuWo
+      email: servrox@1337.wf
   image:
     name: safeglobal/safe-config-service
     version: v2.50.0

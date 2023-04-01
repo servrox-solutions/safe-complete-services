@@ -82,11 +82,20 @@ spec:
       containers:
         - name: django
           image: {{ .Values.config_service.image.name }}:{{ .Values.config_service.image.version }}
+          command: [bash]
+          args:
+            - -c
+            - |
+              # create superuser after db migration
+              sed -i "/^python src\/manage.py migrate .*/a python src\/manage.py createsuperuser --noinput || true" docker-entrypoint.sh
+              
+              # run original docker entrypoint
+              exec /usr/bin/tini -- ./docker-entrypoint.sh
           env:
             - name: DEBUG
               value: {{ .Values.config_service.django.debug | quote }}
             - name: DOCKER_NGINX_VOLUME_ROOT
-              value: /nginx
+              value: /static
             - name: POSTGRES_HOST
               value: postgresql
             - name: POSTGRES_NAME
@@ -107,6 +116,14 @@ spec:
               value: supersecretkey
             - name: DJANGO_ALLOWED_HOSTS
               value: "config.{{ .Values.domain }}"
+            {{- with .Values.config_service.django.superuser }}
+            - name: DJANGO_SUPERUSER_USERNAME
+              value: {{ .username | quote }}
+            - name: DJANGO_SUPERUSER_EMAIL
+              value: {{ .email | quote }}
+            - name: DJANGO_SUPERUSER_PASSWORD
+              value: {{ .password | quote }}
+            {{- end }}
             - name: CSRF_TRUSTED_ORIGINS
               value: "http://localhost:80"
           resources:
@@ -119,8 +136,7 @@ spec:
               memory: 1000Mi
           volumeMounts:
             - name: staticfiles
-              # TODO instruct django to generate static files into this dir, or adjust mountpath
-              mountPath: /app/staticfiles
+              mountPath: /static
             - name: gunicorn
               mountPath: /gunicorn
 
@@ -147,7 +163,7 @@ spec:
             - name: nginx-config
               mountPath: /etc/nginx/templates
             - name: staticfiles
-              mountPath: /nginx/staticfiles
+              mountPath: /nginx
             - name: gunicorn
               mountPath: /gunicorn
       volumes:
