@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-core
+  labels:
+    service: web-core
+spec:
+  selector:
+    app: web-core
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-core
+  labels:
+    service: web-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-core
+  template:
+    metadata:
+      labels:
+        app: web-core
+    spec:
+      containers:
+        - name: node
+          image: {{ .Values.web_core.image.name }}:{{ .Values.web_core.image.version }}
+          env:
+            ## Infura token (required)
+            {{- with .Values.web_core }}
+            - name: NEXT_PUBLIC_INFURA_TOKEN
+              value: {{ .infura_token | quote }}
+            - name: NEXT_PUBLIC_SAFE_APPS_INFURA_TOKEN
+              value: {{ .safe_apps_infura_token | quote }}
+            ## CGW
+            - name: NEXT_PUBLIC_GATEWAY_URL_PRODUCTION
+              value: http://localhost:8090
+            - name: NEXT_PUBLIC_GATEWAY_URL_STAGING
+              value: http://localhost:8090
+              # Transaction simulation
+            - name: NEXT_PUBLIC_TENDERLY_SIMULATE_ENDPOINT_URL
+              value: ""
+            - name: NEXT_PUBLIC_TENDERLY_PROJECT_NAME
+              value: ""
+            - name: NEXT_PUBLIC_TENDERLY_ORG_NAME
+              value: ""
+            - name: NEXT_PUBLIC_IS_PRODUCTION
+              value: "true"
+            - name: NEXT_PUBLIC_SAFE_VERSION
+              value: ""
+            - name: NEXT_PUBLIC_SENTRY_DSN
+              value: ""
+            - name: NEXT_PUBLIC_BEAMER_ID
+              value: ""
+            - name: NEXT_PUBLIC_WC_BRIDGE
+              value: {{ .wc_bridge | quote }}
+            {{- end }}
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            # allow spiking because container builds app on startup...
+            # build seems to be quite hungry
+            limits:
+              cpu: 2000m
+              memory: 3000Mi
+          ports:
+            - name: http
+              containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: http
+

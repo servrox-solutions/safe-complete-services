@@ -1,27 +1,3 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: config
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-spec:
-  rules:
-    - host: config.{{ .Values.domain }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: config
-                port:
-                  number: 80
-  tls:
-    - hosts:
-        - config.{{ .Values.domain }}
-      secretName: tls-cert
-
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -41,9 +17,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: config
   labels:
     service: config
-  name: config
 spec:
   replicas: 1
   selector:
@@ -143,8 +119,8 @@ spec:
         - name: nginx
           image: nginx:stable-alpine3.17
           ports:
-            - containerPort: 80
-              name: http
+            - name: http
+              containerPort: 80
           env:
             - name: DOCKER_NGINX_VOLUME_ROOT
               value: /www
