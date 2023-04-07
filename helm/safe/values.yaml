@@ -1,6 +1,9 @@
-domain: safe.hnicke.de
-
 config_service:
+  image:
+    name: safeglobal/safe-config-service
+    version: v2.50.0
+  endpoints:
+    - config.smr.network
   django:
     # set to false in prod
     debug: true
@@ -8,14 +11,14 @@ config_service:
       username: admin
       password: siukoob8fuWo
       email: servrox@1337.wf
-  image:
-    name: safeglobal/safe-config-service
-    version: v2.50.0
 
 web_core:
   image:
     name: safeglobal/web-core
     version: v1.7.1
+  endpoints:
+    - safe.smr.network
+    - safe.servrox.solutions
   infura_token: ""
   safe_apps_infura_token: ""
   wc_bridge: ""

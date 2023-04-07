@@ -6,7 +6,8 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-    - host: config.{{ .Values.domain }}
+    {{- range .Values.config_service.endpoints }}
+    - host: {{ . }}
       http:
         paths:
           - path: /
@@ -16,7 +17,9 @@ spec:
                 name: config
                 port:
                   number: 80
-    - host: web.{{ .Values.domain }}
+    {{- end }}
+    {{- range .Values.web_core.endpoints }}
+    - host: {{ . }}
       http:
         paths:
           - path: /
@@ -26,10 +29,10 @@ spec:
                 name: web-core
                 port:
                   number: 80
+    {{- end }}
   tls:
     - hosts:
-        - config.{{ .Values.domain }}
-        - web.{{ .Values.domain }}
+    {{- concat .Values.config_service.endpoints .Values.web_core.endpoints | toYaml | nindent 6 }}
       secretName: tls-cert
 
 ---

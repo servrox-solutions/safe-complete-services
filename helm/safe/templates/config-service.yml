@@ -68,8 +68,9 @@ spec:
               # run original docker entrypoint
               exec /usr/bin/tini -- ./docker-entrypoint.sh
           env:
+            {{- with .Values.config_service }}
             - name: DEBUG
-              value: {{ .Values.config_service.django.debug | quote }}
+              value: {{ .django.debug | quote }}
             - name: DOCKER_NGINX_VOLUME_ROOT
               value: /static
             - name: POSTGRES_HOST
@@ -91,14 +92,13 @@ spec:
               # TODO use secret
               value: supersecretkey
             - name: DJANGO_ALLOWED_HOSTS
-              value: "config.{{ .Values.domain }}"
-            {{- with .Values.config_service.django.superuser }}
+              value: {{ join "," .endpoints | quote }}
             - name: DJANGO_SUPERUSER_USERNAME
-              value: {{ .username | quote }}
+              value: {{ .django.superuser.username | quote }}
             - name: DJANGO_SUPERUSER_EMAIL
-              value: {{ .email | quote }}
+              value: {{ .django.superuser.email | quote }}
             - name: DJANGO_SUPERUSER_PASSWORD
-              value: {{ .password | quote }}
+              value: {{ .django.superuser.password | quote }}
             {{- end }}
             - name: CSRF_TRUSTED_ORIGINS
               value: "http://localhost:80"
