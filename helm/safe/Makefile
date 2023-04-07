@@ -45,7 +45,7 @@ install-ingress-controller:
 		--version 4.1.4 \
 		${ingress_controller_release_name} \
 		ingress-nginx \
-		--set controller.ingressClassResource.default=true
+		-f ingress-controller.yaml
 
 uninstall-ingress-controller:
 	helm delete \

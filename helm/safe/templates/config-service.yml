@@ -89,24 +89,33 @@ spec:
             - name: GUNICORN_BIND_PORT
               value: "8000"
             - name: SECRET_KEY
-              # TODO use secret
-              value: supersecretkey
+              valueFrom:
+                secretKeyRef:
+                  name: config-service
+                  key: secret-key
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            # allow pod ip for readiness probes
             - name: DJANGO_ALLOWED_HOSTS
-              value: {{ join "," .endpoints | quote }}
+              value: {{ join "," (list .hostname "$(POD_IP)") }}
             - name: DJANGO_SUPERUSER_USERNAME
               value: {{ .django.superuser.username | quote }}
             - name: DJANGO_SUPERUSER_EMAIL
               value: {{ .django.superuser.email | quote }}
             - name: DJANGO_SUPERUSER_PASSWORD
-              value: {{ .django.superuser.password | quote }}
-            {{- end }}
+              valueFrom:
+                secretKeyRef:
+                  name: config-service
+                  key: django-superuser-password
             - name: CSRF_TRUSTED_ORIGINS
-              value: "http://localhost:80"
+              value: {{ print "https://" .hostname | quote }}
+            {{- end }}
           resources:
-            # TODO less RAM
             requests:
               cpu: 200m
-              memory: 1000Mi
+              memory: 900Mi
             limits:
               cpu: 500m
               memory: 1000Mi
@@ -142,6 +151,11 @@ spec:
               mountPath: /nginx
             - name: gunicorn
               mountPath: /gunicorn
+          readinessProbe:
+            httpGet:
+              path: /api/v1/about/
+              port: http
+            initialDelaySeconds: 15
       volumes:
         - name: nginx-config
           configMap:
@@ -162,3 +176,19 @@ metadata:
 data:
   nginx.conf.template: |-
 {{ .Files.Get "files/config-service/nginx.conf.template" | indent 4 }}
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config-service
+  annotations:
+    "helm.sh/resource-policy": keep
+data:
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "client-gateway") | default dict }}
+  {{- $secretData := (get $secretObj "data") | default dict }}
+  {{- $secretKey := (get $secretData "secret-key") | default (randAlphaNum 128 | b64enc) }}
+  secret-key: {{ $secretKey | quote }}
+  {{- $djangoSuperuserPassword := (get $secretData "djangoSuperuserPassword") | default (randAlphaNum 32 | b64enc) }}
+  django-superuser-password: {{ $djangoSuperuserPassword | quote }}

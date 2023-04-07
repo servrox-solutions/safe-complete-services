@@ -1,0 +1,8 @@
+controller:
+  ingressClassResource:
+    default: true
+  config:
+    enable-brotli: "true"
+    brotli-level: "6"
+    use-gzip: "true"
+    gzip-level: "2"

@@ -2,27 +2,34 @@ config_service:
   image:
     name: safeglobal/safe-config-service
     version: v2.50.0
-  endpoints:
-    - config.smr.network
+  hostname: config.smr.network
   django:
     # set to false in prod
     debug: true
     superuser:
       username: admin
-      password: siukoob8fuWo
       email: servrox@1337.wf
 
 web_core:
   image:
     name: safeglobal/web-core
     version: v1.7.1
-  endpoints:
+  hostnames:
     - safe.smr.network
     - safe.servrox.solutions
   infura_token: ""
   safe_apps_infura_token: ""
   wc_bridge: ""
 
+client_gateway:
+  image:
+    name: safeglobal/safe-client-gateway
+    version: v3.51.0
+  hostnames:
+    - gateway.smr.network
+  exchange_api:
+    base_uri: https://api.exchangeratesapi.io/latest
+    key: your_exchange_rate_api_token
 
 postgresql:
   fullnameOverride: postgresql
@@ -32,3 +39,9 @@ postgresql:
     persistence:
       size: 8Gi
 
+
+redis:
+  fullnameOverride: redis
+  architecture: standalone
+  auth:
+    enabled: false
