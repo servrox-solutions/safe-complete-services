@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.3"
 
 volumes:
   nginx-shared:
@@ -65,12 +65,12 @@ services:
       - web
 
   # web-core
-#  ui:
-#    build: ./web-core/
-#    env_file:
-#      - ./web-core/.env.example
-#    ports:
-#      - "3000:3000"
+  #  ui:
+  #    build: ./web-core/
+  #    env_file:
+  #      - ./web-core/.env.example
+  #    ports:
+  #      - "3000:3000"
 
   # safe-transaction-service
   transaction-nginx:

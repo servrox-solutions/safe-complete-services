@@ -5,7 +5,8 @@ import "solidity-coverage";
 import "hardhat-deploy";
 import dotenv from "dotenv";
 import yargs from "yargs";
-import { getSingletonFactoryInfo } from "@gnosis.pm/safe-singleton-factory";
+// import { getSingletonFactoryInfo } from "@gnosis.pm/safe-singleton-factory";
+import { getSingletonFactoryInfo } from "../safe-singleton-factory/dist";
 
 const argv = yargs
     .option("network", {
@@ -24,7 +25,7 @@ const DEFAULT_MNEMONIC = "choice pair gloom cage dove magnet program learn abstr
 
 const sharedNetworkConfig: HttpNetworkUserConfig = {};
 if (PK) {
-    sharedNetworkConfig.accounts = [ ];
+    sharedNetworkConfig.accounts = [];
 } else {
     sharedNetworkConfig.accounts = {
         mnemonic: MNEMONIC || DEFAULT_MNEMONIC,
@@ -41,10 +42,10 @@ import "./src/tasks/show_codesize";
 import { BigNumber } from "@ethersproject/bignumber";
 
 const primarySolidityVersion = SOLIDITY_VERSION || "0.7.6";
-const soliditySettings = !!SOLIDITY_SETTINGS ? JSON.parse(SOLIDITY_SETTINGS) : undefined;
+const soliditySettings = SOLIDITY_SETTINGS ? JSON.parse(SOLIDITY_SETTINGS) : undefined;
 
 const deterministicDeployment = (network: string) => {
-    console.log(network)
+    console.log(network);
     const info = getSingletonFactoryInfo(+network);
     if (!info) {
         throw new Error(`
@@ -127,9 +128,11 @@ const userConfig: HardhatUserConfig = {
             ...sharedNetworkConfig,
             url: `https://api.avax.network/ext/bc/C/rpc`,
         },
-        shimmer: {
+        "shimmerevm-testnet": {
             ...sharedNetworkConfig,
-            url: `https://json-rpc.evm.testnet.shimmer.network/`,
+            url: `${NODE_URL}`,
+            chainId: 1071,
+            // gasPrice: "auto",
         },
     },
     deterministicDeployment,
@@ -139,12 +142,27 @@ const userConfig: HardhatUserConfig = {
     mocha: {
         timeout: 200000000,
     },
+    // etherscan: {
+    //     apiKey: ETHERSCAN_API_KEY,
+    // },
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY,
+        apiKey: {
+            "shimmerevm-testnet": "ABCDE12345ABCDE12345ABCDE123456789",
+        },
+        customChains: [
+            {
+                network: "shimmerevm-testnet",
+                chainId: 1071,
+                urls: {
+                    apiURL: "https://explorer.evm.testnet.shimmer.network/api",
+                    browserURL: "https://explorer.evm.testnet.shimmer.network/",
+                },
+            },
+        ],
     },
 };
 if (NODE_URL) {
-    userConfig.networks!!.custom = {
+    userConfig.networks!.custom = {
         ...sharedNetworkConfig,
         url: NODE_URL,
         timeout: 20000000,
