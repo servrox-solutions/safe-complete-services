@@ -34,12 +34,17 @@ spec:
         - name: node
           image: {{ .Values.web_core.image.name }}:{{ .Values.web_core.image.version }}
           env:
-            ## Infura token (required)
             {{- with .Values.web_core }}
             - name: NEXT_PUBLIC_INFURA_TOKEN
-              value: {{ .infura_token | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: web-core
+                  key: infura-token
             - name: NEXT_PUBLIC_SAFE_APPS_INFURA_TOKEN
-              value: {{ .safe_apps_infura_token | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: web-core
+                  key: safe-apps-infura-token
             ## CGW
             - name: NEXT_PUBLIC_GATEWAY_URL_PRODUCTION
               value: https://{{ $.Values.client_gateway.hostname }}
@@ -80,3 +85,11 @@ spec:
               path: /index.html
               port: http
 
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: web-core
+stringData:
+  infura-token: {{ .Values.web_core.infura_token | quote }}
+  safe-apps-infura-token: {{ .Values.web_core.safe_apps_infura_token | quote }}
