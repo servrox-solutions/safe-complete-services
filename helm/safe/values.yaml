@@ -25,8 +25,7 @@ client_gateway:
   image:
     name: safeglobal/safe-client-gateway
     version: v3.51.0
-  hostnames:
-    - gateway.smr.network
+  hostname: gateway.smr.network
   exchange_api:
     base_uri: https://api.exchangeratesapi.io/latest
     key: your_exchange_rate_api_token

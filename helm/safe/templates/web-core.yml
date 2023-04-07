@@ -42,9 +42,9 @@ spec:
               value: {{ .safe_apps_infura_token | quote }}
             ## CGW
             - name: NEXT_PUBLIC_GATEWAY_URL_PRODUCTION
-              value: http://localhost:8090
+              value: https://{{ $.Values.client_gateway.hostname }}
             - name: NEXT_PUBLIC_GATEWAY_URL_STAGING
-              value: http://localhost:8090
+              value: https://{{ $.Values.client_gateway.hostname }}
               # Transaction simulation
             - name: NEXT_PUBLIC_TENDERLY_SIMULATE_ENDPOINT_URL
               value: ""

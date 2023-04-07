@@ -28,8 +28,7 @@ spec:
                 port:
                   number: 80
     {{- end }}
-    {{- range .Values.client_gateway.hostnames }}
-    - host: {{ . }}
+    - host: {{ .Values.client_gateway.hostname }}
       http:
         paths:
           - path: /
@@ -39,13 +38,11 @@ spec:
                 name: client-gateway
                 port:
                   number: 80
-    {{ end }}
   tls:
     - hosts:
-      {{- range list .Values.web_core.hostnames .Values.client_gateway.hostnames }}
-      {{- . | toYaml | nindent 8 }}
-      {{- end }}
+      {{- .Values.web_core.hostnames | toYaml | nindent 8 }}
         - {{ .Values.config_service.hostname }}
+        - {{ .Values.client_gateway.hostname }}
       secretName: tls-cert
 
 ---
