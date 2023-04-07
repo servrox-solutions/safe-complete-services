@@ -11,7 +11,7 @@ export KUBECONFIG+=":~/.kube/gnosis-safe.config"
 ### IAM setup
 ```
 # associate clustser with iam oidc provider
-eksctl utils associate-iam-oidc-provider --region=eu-central-1 --cluster=<cluster-name> --approve
+eksctl utils associate-iam-oidc-provider --region=eu-central-1 --cluster=gnosis-safe --approve
 ```
 
 ### grant cluster admin permissions
@@ -36,6 +36,6 @@ eksctl create iamserviceaccount \
   --role-name AmazonEKS_EBS_CSI_DriverRole
   
 # install csi driver addon
-eksctl create addon --name aws-ebs-csi-driver --cluster <cluster-name> --service-account-role-arn arn:aws:iam::<your-account-id>:role/AmazonEKS_EBS_CSI_DriverRole --force
+eksctl create addon --name aws-ebs-csi-driver --cluster gnosis-safe --service-account-role-arn arn:aws:iam::471128765712:role/AmazonEKS_EBS_CSI_DriverRole --force
 ```
 
