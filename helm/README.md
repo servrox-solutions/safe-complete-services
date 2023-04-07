@@ -1,11 +1,29 @@
 ## EKS cluster setup
 
+### setup cluster access
+```
+aws eks update-kubeconfig --region eu-central-1 --name gnosis-safe --kubeconfig ~/.kube/gnosis-safe.config
+
+# in your .zshrc:
+export KUBECONFIG+=":~/.kube/gnosis-safe.config"
+```
+
+### IAM setup
+```
+# associate clustser with iam oidc provider
+eksctl utils associate-iam-oidc-provider --region=eu-central-1 --cluster=<cluster-name> --approve
+```
+
+### grant cluster admin permissions
+```
+# example on how to add mm@servrox.solutions as cluster admin
+eksctl create iamidentitymapping --cluster gnosis-safe --arn arn:aws:iam::471128765712:user/mm@servrox.solutions --group system:masters --username mm@servrox.solutions
+```
+
 ### csi driver
 required for PV provisioning.
 
 ```
-# associate clustser with iam oidc provider
-eksctl utils associate-iam-oidc-provider --region=eu-central-1 --cluster=<cluster-name> --approve
 
 # create iam role for csi driver
 eksctl create iamserviceaccount \
@@ -20,3 +38,4 @@ eksctl create iamserviceaccount \
 # install csi driver addon
 eksctl create addon --name aws-ebs-csi-driver --cluster <cluster-name> --service-account-role-arn arn:aws:iam::<your-account-id>:role/AmazonEKS_EBS_CSI_DriverRole --force
 ```
+
