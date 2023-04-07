@@ -150,16 +150,10 @@ const getProxyFactoryContractDeployment = (chainId: string) => {
 
 export const getProxyFactoryContractInstance = (chainId: string, safeVersion: string = LATEST_SAFE_VERSION) => {
   const ethAdapter = createEthersAdapter()
-// console.log('inside')
-//   const x = getProxyFactoryContractDeployment(chainId);
-//   x!.defaultAddress = "0x64b23b4c9e4B5DB4d34abc448ff532Aa38A06BC0";
-//   x!.networkAddresses[1076] = "0x64b23b4c9e4B5DB4d34abc448ff532Aa38A06BC0";
-//   console.log(x);
   console.log(getProxyFactoryContractDeployment(chainId));
   return ethAdapter.getSafeProxyFactoryContract({
     singletonDeployment: getProxyFactoryContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),
-    customContractAddress: '0x64b23b4c9e4B5DB4d34abc448ff532Aa38A06BC0',
   })
 }
 
@@ -182,12 +176,6 @@ export const getFallbackHandlerContractInstance = (
   safeVersion: string = LATEST_SAFE_VERSION,
 ): CompatibilityFallbackHandlerEthersContract => {
   const ethAdapter = createEthersAdapter()
-  // console.log(chainId, safeVersion, ethAdapter)
-  //
-  // const x = getFallbackHandlerContractDeployment(chainId);
-  // x!.defaultAddress = "0x5741f8aBEAf7AC67bB8A5753DcBd048A16158aC9";
-  // x!.networkAddresses[1076] = "0x5741f8aBEAf7AC67bB8A5753DcBd048A16158aC9";
-// console.log(getFallbackHandlerContractDeployment(chainId));
   return ethAdapter.getCompatibilityFallbackHandlerContract({
     singletonDeployment: getFallbackHandlerContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),

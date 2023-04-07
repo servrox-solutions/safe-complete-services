@@ -163,7 +163,7 @@ const chains: Record<string, string> = {
   clv: '1024',
   tbtt: '1028',
   cfx: '1030',
-  smr: '1076',
+  smr: '1071',
   'metis-andromeda': '1088',
   math: '1139',
   tmath: '1140',
