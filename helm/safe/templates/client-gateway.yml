@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: {{ .Values.client_gateway.image.name }}:{{ .Values.client_gateway.image.version }}
+          image: {{ .Values.client_gateway.image.name }}:{{ .Values.client_gateway.image.tag }}
           env:
             {{- with .Values.client_gateway }}
             - name: CONFIG_SERVICE_URI

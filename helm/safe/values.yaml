@@ -1,11 +1,27 @@
 config_service:
   image:
     name: safeglobal/safe-config-service
-    version: v2.50.0
+    tag: v2.50.0
   hostname: config.smr.network
   django:
-    # set to false in prod
-    debug: true
+    debug: false
+    superuser:
+      username: admin
+      email: servrox@1337.wf
+
+transaction_service:
+  image:
+    name: safeglobal/safe-transaction-service
+    tag: v4.17.0
+  hostname: transaction.smr.network
+  etherium:
+    node_url: https://json-rpc.evm.testnet.shimmer.network/
+    tracing_node_url: ""
+    l2_network: 1
+
+
+  django:
+    debug: false
     superuser:
       username: admin
       email: servrox@1337.wf
@@ -13,7 +29,7 @@ config_service:
 web_core:
   image:
     name: safeglobal/web-core
-    version: v1.7.1
+    tag: v1.7.1
   hostnames:
     - safe.smr.network
     - safe.servrox.solutions
@@ -24,7 +40,7 @@ web_core:
 client_gateway:
   image:
     name: safeglobal/safe-client-gateway
-    version: v3.51.0
+    tag: v3.51.0
   hostname: gateway.smr.network
   exchange_api:
     base_uri: https://api.exchangeratesapi.io/latest
@@ -44,3 +60,12 @@ redis:
   architecture: standalone
   auth:
     enabled: false
+
+rabbitmq:
+  fullnameOverride: rabbitmq
+  clustering:
+    enabled: false
+  auth:
+    username: admin
+    existingPasswordSecret: rabbitmq
+    existingErlangSecret: rabbitmq

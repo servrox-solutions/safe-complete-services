@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: node
-          image: {{ .Values.web_core.image.name }}:{{ .Values.web_core.image.version }}
+          image: {{ .Values.web_core.image.name }}:{{ .Values.web_core.image.tag }}
           env:
             {{- with .Values.web_core }}
             - name: NEXT_PUBLIC_INFURA_TOKEN

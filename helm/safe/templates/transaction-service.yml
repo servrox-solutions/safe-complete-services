@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: config
+  name: transaction
   labels:
-    service: config
+    service: transaction
 spec:
   selector:
-    app: config
+    app: transaction
   ports:
     - name: http
       port: 80
@@ -17,21 +17,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: config
+  name: transaction
   labels:
-    service: config
+    service: transaction
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: config
+      app: transaction
   template:
     metadata:
       annotations:
         # enforce pod restart when nginx config changes
-        checksum/proxy-config: {{ .Files.Get "files/config-service/nginx.conf.template" | sha256sum }}
+        checksum/proxy-config: {{ .Files.Get "files/transaction-service/nginx/nginx.conf" | sha256sum }}
       labels:
-        app: config
+        app: transaction
     spec:
       initContainers:
         - name: db-create
@@ -44,7 +44,7 @@ spec:
                 echo waiting for postgres to become ready
                 sleep 1
               done
-              createdb config_service || true
+              createdb transaction_service || true
           env:
             - name: PGHOST
               value: postgresql
@@ -57,26 +57,30 @@ spec:
                   key: postgres-password
       containers:
         - name: django
-          image: {{ .Values.config_service.image.name }}:{{ .Values.config_service.image.tag }}
+          image: {{ .Values.transaction_service.image.name }}:{{ .Values.transaction_service.image.tag }}
           command: [bash]
           args:
             - -c
             - |
-              # create superuser after db migration
-              sed -i "/^python src\/manage.py migrate .*/a python src\/manage.py createsuperuser --noinput || true" docker-entrypoint.sh
-              
-              # run original docker entrypoint
-              exec /usr/bin/tini -- ./docker-entrypoint.sh
+              {{ .Files.Get "files/transaction-service/web/run_web.sh" | nindent 14 }}
           env:
-            {{- with .Values.config_service }}
+            {{- with .Values.transaction_service }}
+            - name: ETHEREUM_NODE_URL
+              value: {{ .etherium.node_url | quote }}
+            - name: ETHEREUM_TRACING_NODE_URL
+              value: {{ .etherium.tracing_node_url | quote }}
+            - name: ETH_L2_NETWORK
+              value: {{ .etherium.l2_network | quote }}
+            - name: PYTHONPATH
+              value: /app/
+            - name: DJANGO_SETTINGS_MODULE
+              value: config.settings.production
             - name: DEBUG
               value: {{ .django.debug | quote }}
-            - name: DOCKER_NGINX_VOLUME_ROOT
-              value: /static
             - name: POSTGRES_HOST
               value: postgresql
             - name: POSTGRES_NAME
-              value: config_service
+              value: transaction_service
             - name: POSTGRES_USER
               value: postgres
             - name: POSTGRES_PASSWORD
@@ -84,14 +88,25 @@ spec:
                 secretKeyRef:
                   name: postgresql
                   key: postgres-password
+            - name: DATABASE_URL
+              value: psql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_NAME)
+            - name: REDIS_URL
+              value: redis://$(REDIS_MASTER_SERVICE_HOST):$(REDIS_MASTER_SERVICE_PORT)/1
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                 secretKeyRef:
+                   name: rabbitmq
+                   key: rabbitmq-password
+            - name: CELERY_BROKER_URL
+              value: amqp://admin:$(RABBITMQ_PASSWORD)@$(RABBITMQ_SERVICE_HOST)/
             - name: GUNICORN_BIND_SOCKET
               value: "unix:/gunicorn/gunicorn.socket"
             - name: GUNICORN_BIND_PORT
               value: "8000"
-            - name: SECRET_KEY
+            - name: DJANGO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: config-service
+                  name: transaction-service
                   key: secret-key
             - name: POD_IP
               valueFrom:
@@ -107,7 +122,7 @@ spec:
             - name: DJANGO_SUPERUSER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: config-service
+                  name: transaction-service
                   key: django-superuser-password
             - name: CSRF_TRUSTED_ORIGINS
               value: {{ print "https://" .hostname | quote }}
@@ -121,7 +136,7 @@ spec:
               memory: 1000Mi
           volumeMounts:
             - name: staticfiles
-              mountPath: /static
+              mountPath: /nginx
             - name: gunicorn
               mountPath: /gunicorn
 
@@ -129,14 +144,12 @@ spec:
           image: nginx:stable-alpine3.17
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8000
           env:
             - name: DOCKER_NGINX_VOLUME_ROOT
               value: /www
             - name: GUNICORN_BIND_SOCKET
               value: unix:/gunicorn/gunicorn.socket
-            - name: NGINX_ENVSUBST_OUTPUT_DIR
-              value: /etc/nginx
           resources:
             requests:
               cpu: 50m
@@ -146,7 +159,8 @@ spec:
               memory: 150Mi
           volumeMounts:
             - name: nginx-config
-              mountPath: /etc/nginx/templates
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
             - name: staticfiles
               mountPath: /nginx
             - name: gunicorn
@@ -159,7 +173,7 @@ spec:
       volumes:
         - name: nginx-config
           configMap:
-            name: config-service-nginx
+            name: transaction-service-nginx
         - name: staticfiles
           emptyDir: {}
         - name: gunicorn
@@ -170,23 +184,23 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-service-nginx
+  name: transaction-service-nginx
   labels:
-    app: config
+    app: transaction
 data:
-  nginx.conf.template: |-
-{{ .Files.Get "files/config-service/nginx.conf.template" | indent 4 }}
+  nginx.conf: |-
+    {{ .Files.Get "files/transaction-service/nginx/nginx.conf" | nindent 4 }}
 
 
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: config-service
+  name: transaction-service
   annotations:
     "helm.sh/resource-policy": keep
 data:
-  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "config-service") | default dict }}
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "transaction-service") | default dict }}
   {{- $secretData := (get $secretObj "data") | default dict }}
   {{- $secretKey := (get $secretData "secret-key") | default (randAlphaNum 128 | b64enc) }}
   secret-key: {{ $secretKey | quote }}

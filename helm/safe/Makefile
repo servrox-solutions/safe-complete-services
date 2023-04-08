@@ -5,20 +5,31 @@ release_name = safe
 
 # install / upgrade chart
 install: charts
+	if ! kubectl get --context "${context}" namespace "${namespace}" > /dev/null; then \
+		kubectl create namespace --context "${context}" "${namespace}"; \
+	fi
+	if ! kubectl get --context "${context}" -n "${namespace}" secret rabbitmq; then \
+		kubectl create secret generic \
+			-n "${namespace}" \
+			--context "${context}" \
+			rabbitmq \
+			--from-literal=rabbitmq-password=$(shell pwgen 32 -n1) \
+			--from-literal=rabbitmq-erlang-cookie=$(shell pwgen 128 -n1) \
+			; \
+	fi
 	helm upgrade \
 		--install \
-		--kube-context ${context} \
-		--namespace ${namespace}  \
-		--create-namespace \
-		${release_name} \
+		--kube-context "${context}" \
+		--namespace "${namespace}"  \
+		"${release_name}" \
 		.
 
 # prints the rendered chart to stdout
 template: charts
 	helm template \
-		--kube-context ${context} \
-		--namespace ${namespace}  \
-		${release_name} \
+		--kube-context "${context}" \
+		--namespace "${namespace}" \
+		"${release_name}" \
 		.
 
 uninstall:
@@ -75,7 +86,7 @@ install-cert-manager:
 
 uninstall-cert-manager:
 	helm delete \
-		--kube-context ${context} \
-		--namespace ${cert_manager_namespace} \
-		${cert_manager_release_name}
-	kubectl delete --context ${context} namespace ${cert_manager_namespace}
+		--kube-context "${context}" \
+		--namespace "${cert_manager_namespace}" \
+		"${cert_manager_release_name}"
+	kubectl delete --context "${context}" namespace "${cert_manager_namespace}"
