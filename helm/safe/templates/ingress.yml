@@ -23,7 +23,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: transaction
+                name: transaction-web
                 port:
                   number: 80
     {{- range .Values.web_core.hostnames }}

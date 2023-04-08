@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-flower
+  labels:
+    service: transaction-flower
+spec:
+  selector:
+    app: transaction-flower
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-flower
+  labels:
+    service: transaction-flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction-flower
+  template:
+    metadata:
+      labels:
+        app: transaction-flower
+    spec:
+      initContainers:
+        - {{ include "safe.transaction_service.create_db_container" . | nindent 10 }}
+      containers:
+        - name: django
+          image: {{ .Values.transaction_service.image.name }}:{{ .Values.transaction_service.image.tag }}
+          command: [bash]
+          args:
+            - -c
+            - |
+              {{ .Files.Get "files/transaction-service/web/celery/flower/run.sh" | nindent 14 }}
+          env:
+            {{ include "safe.transaction_service.common_env" . | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 5555
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            limits:
+              cpu: 300m
+              memory: 300Mi
