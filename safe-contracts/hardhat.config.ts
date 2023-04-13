@@ -130,7 +130,11 @@ const userConfig: HardhatUserConfig = {
         },
         "shimmerevm-testnet": {
             ...sharedNetworkConfig,
+<<<<<<< Updated upstream
             url: `${NODE_URL}`,
+=======
+            url: `https://json-rpc.evm.testnet.shimmer.network/`,
+>>>>>>> Stashed changes
             chainId: 1071,
             // gasPrice: "auto",
         },

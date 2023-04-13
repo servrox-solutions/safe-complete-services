@@ -4,5 +4,6 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/safe-singleton-factory" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/safe-tasks" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/safe-transaction-service/safe-eth-py" vcs="Git" />
   </component>
 </project>
