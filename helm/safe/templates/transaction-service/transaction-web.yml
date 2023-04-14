@@ -47,8 +47,8 @@ spec:
             {{ include "safe.transaction_service.common_env" . | nindent 12 }}
           resources:
             requests:
-              cpu: 200m
-              memory: 900Mi
+              cpu: 100m
+              memory: 200Mi
             limits:
               cpu: 500m
               memory: 1000Mi
@@ -70,8 +70,8 @@ spec:
               value: unix:/gunicorn/gunicorn.socket
           resources:
             requests:
-              cpu: 50m
-              memory: 100Mi
+              cpu: 25m
+              memory: 50Mi
             limits:
               cpu: 100m
               memory: 150Mi

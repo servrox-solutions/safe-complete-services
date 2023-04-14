@@ -70,8 +70,8 @@ spec:
             {{- end }}
           resources:
             requests:
-              cpu: 200m
-              memory: 200Mi
+              cpu: 100m
+              memory: 100Mi
             # allow spiking because container builds app on startup...
             # build seems to be quite hungry
             limits:

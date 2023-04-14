@@ -51,6 +51,10 @@ postgresql:
   auth:
     postgresPassword: eseiqu2aiyieh7Iesai1Xae0
   primary:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
     persistence:
       size: 8Gi
 
