@@ -36,7 +36,7 @@ spec:
               service:
                 name: web-core
                 port:
-                  number: 80
+                  number: 8080
     {{- end }}
     - host: {{ .Values.client_gateway.hostname }}
       http:

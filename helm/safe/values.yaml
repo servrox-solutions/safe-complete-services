@@ -28,8 +28,8 @@ transaction_service:
 
 web_core:
   image:
-    name: safeglobal/web-core
-    tag: v1.7.1
+    name: 471128765712.dkr.ecr.eu-central-1.amazonaws.com/safe-wallet-web-shimmer
+    tag: latest
   hostnames:
     - safe.smr.network
     - safe.servrox.solutions

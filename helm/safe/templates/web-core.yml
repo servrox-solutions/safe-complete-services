@@ -79,10 +79,10 @@ spec:
               memory: 3000Mi
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 8080
           readinessProbe:
             httpGet:
-              path: /index.html
+              path: /
               port: http
 
 ---
