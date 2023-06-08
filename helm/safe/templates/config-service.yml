@@ -79,6 +79,8 @@ spec:
               value: config_service
             - name: POSTGRES_USER
               value: postgres
+            - name: CGW_FLUSH_TOKEN
+              value: xK8ghxcWHXPKSjQlghAB3xoRMhsKPZEOOk0ln6UWq0GF
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -137,6 +139,8 @@ spec:
               value: unix:/gunicorn/gunicorn.socket
             - name: NGINX_ENVSUBST_OUTPUT_DIR
               value: /etc/nginx
+            - name: CGW_FLUSH_TOKEN
+              value: xK8ghxcWHXPKSjQlghAB3xoRMhsKPZEOOk0ln6UWq0GF
           resources:
             requests:
               cpu: 50m

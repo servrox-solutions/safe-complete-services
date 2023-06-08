@@ -138,6 +138,7 @@ impl InfoProvider for DefaultInfoProvider<'_> {
 
     async fn safe_info(&self, safe: &str) -> ApiResult<SafeInfo> {
         let safe_cache = &mut self.safe_cache.lock().await;
+
         Self::cached(safe_cache, || self.load_safe_info(safe.to_string()), safe).await
     }
 

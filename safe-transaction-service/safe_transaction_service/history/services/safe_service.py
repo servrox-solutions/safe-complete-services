@@ -155,7 +155,19 @@ class SafeService:
         """
         try:
             safe = Safe(safe_address, self.ethereum_client)
-            safe_info = safe.retrieve_all_info()
+
+            safe_info = SafeInfo(
+                safe.address,
+                safe.retrieve_fallback_handler(),
+                safe.retrieve_guard(),
+                safe.retrieve_master_copy_address(),
+                safe.retrieve_modules(),
+                safe.retrieve_nonce(),
+                safe.retrieve_owners(),
+                safe.retrieve_threshold(),
+                safe.retrieve_version(),
+            )
+            # safe.retrieve_all_info()
             # Return same master copy information than the db method
             return replace(
                 safe_info,

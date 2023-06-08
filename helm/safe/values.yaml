@@ -18,8 +18,6 @@ transaction_service:
     node_url: https://json-rpc.evm.testnet.shimmer.network/
     tracing_node_url: ""
     l2_network: 1
-
-
   django:
     debug: false
     superuser:
@@ -51,6 +49,11 @@ postgresql:
   auth:
     postgresPassword: eseiqu2aiyieh7Iesai1Xae0
   primary:
+    allowedTopologies:
+      - matchLabelExpressions:
+          - key: failure-domain.beta.kubernetes.io/zone
+            values:
+              - eu-central-1a
     resources:
       requests:
         cpu: 100m
@@ -64,6 +67,12 @@ redis:
   architecture: standalone
   auth:
     enabled: false
+  primary:
+    allowedTopologies:
+      - matchLabelExpressions:
+          - key: failure-domain.beta.kubernetes.io/zone
+            values:
+              - eu-central-1a
 
 rabbitmq:
   fullnameOverride: rabbitmq
@@ -73,3 +82,9 @@ rabbitmq:
     username: admin
     existingPasswordSecret: rabbitmq
     existingErlangSecret: rabbitmq
+  primary:
+    allowedTopologies:
+      - matchLabelExpressions:
+          - key: failure-domain.beta.kubernetes.io/zone
+            values:
+              - eu-central-1a

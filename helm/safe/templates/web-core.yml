@@ -9,7 +9,7 @@ spec:
     app: web-core
   ports:
     - name: http
-      port: 80
+      port: 8080
       protocol: TCP
       targetPort: http
 
@@ -84,6 +84,7 @@ spec:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: 5
 
 ---
 apiVersion: v1

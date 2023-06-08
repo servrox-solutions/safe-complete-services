@@ -1,4 +1,4 @@
-context = gnosis-safe
+context = arn:aws:eks:eu-central-1:471128765712:cluster/gnosis-safe
 
 namespace = poc
 release_name = safe
