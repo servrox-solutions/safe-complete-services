@@ -39,6 +39,8 @@ spec:
               value: "https://{{ $.Values.config_service.hostname }}"
             - name: ROCKET_PORT
               value: "80"
+            - name: FEATURE_MESSAGES
+              value: "true"
             - name: ROCKET_SECRET_KEY
               valueFrom:
                 secretKeyRef:

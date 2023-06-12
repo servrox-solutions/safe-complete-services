@@ -11,8 +11,8 @@ config_service:
 
 transaction_service:
   image:
-    name: safeglobal/safe-transaction-service
-    tag: v4.17.0
+    name: 471128765712.dkr.ecr.eu-central-1.amazonaws.com/safe-transaction-service-shimmer
+    tag: latest
   hostname: transaction.smr.network
   etherium:
     node_url: https://json-rpc.evm.testnet.shimmer.network/
