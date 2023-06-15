@@ -38,6 +38,7 @@ spec:
       containers:
         - name: django
           image: {{ .Values.transaction_service.image.name }}:{{ .Values.transaction_service.image.tag }}
+          imagePullPolicy: Always
           command: [bash]
           args:
             - -c
