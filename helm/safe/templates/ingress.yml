@@ -26,18 +26,18 @@ spec:
                 name: transaction-web
                 port:
                   number: 80
-    {{- range .Values.web_core.hostnames }}
-    - host: {{ . }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: web-core
-                port:
-                  number: 8080
-    {{- end }}
+{{/*    {{- range .Values.web_core.hostnames }}*/}}
+{{/*    - host: {{ . }}*/}}
+{{/*      http:*/}}
+{{/*        paths:*/}}
+{{/*          - path: /*/}}
+{{/*            pathType: Prefix*/}}
+{{/*            backend:*/}}
+{{/*              service:*/}}
+{{/*                name: web-core*/}}
+{{/*                port:*/}}
+{{/*                  number: 8080*/}}
+{{/*    {{- end }}*/}}
     - host: {{ .Values.client_gateway.hostname }}
       http:
         paths:
@@ -50,7 +50,7 @@ spec:
                   number: 80
   tls:
     - hosts:
-      {{- .Values.web_core.hostnames | toYaml | nindent 8 }}
+{{/*      {{- .Values.web_core.hostnames | toYaml | nindent 8 }}*/}}
         - {{ .Values.config_service.hostname }}
         - {{ .Values.transaction_service.hostname }}
         - {{ .Values.client_gateway.hostname }}
