@@ -1,7 +1,7 @@
 config_service:
   image:
     name: safeglobal/safe-config-service
-    tag: v2.50.0
+    tag: latest
   hostname: config.smr.network
   django:
     debug: false
@@ -11,11 +11,11 @@ config_service:
 
 transaction_service:
   image:
-    name: 471128765712.dkr.ecr.eu-central-1.amazonaws.com/safe-transaction-service-shimmer
+    name: safeglobal/safe-transaction-service
     tag: latest
   hostname: transaction.smr.network
   etherium:
-    node_url: https://json-rpc.evm.testnet.shimmer.network/
+    node_url: https://json-rpc.evm.shimmer.network/
     tracing_node_url: ""
     l2_network: 1
   django:
@@ -26,7 +26,7 @@ transaction_service:
 
 web_core:
   image:
-    name: 471128765712.dkr.ecr.eu-central-1.amazonaws.com/safe-wallet-web-shimmer
+    name: safeglobal/safe-wallet-web
     tag: latest
   hostnames:
     - safe.smr.network
@@ -38,7 +38,7 @@ web_core:
 client_gateway:
   image:
     name: safeglobal/safe-client-gateway
-    tag: v3.51.0
+    tag: latest
   hostname: gateway.smr.network
   exchange_api:
     base_uri: https://api.exchangeratesapi.io/latest
