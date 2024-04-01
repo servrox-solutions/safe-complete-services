@@ -1,7 +1,7 @@
 config_service:
   image:
     name: safeglobal/safe-config-service
-    tag: latest
+    tag: v2.75.0
   hostname: config.smr.network
   django:
     debug: false
