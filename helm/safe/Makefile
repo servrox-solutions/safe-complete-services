@@ -103,3 +103,15 @@ uninstall-cert-manager:
 		--namespace "${cert_manager_namespace}" \
 		"${cert_manager_release_name}"
 	kubectl delete --context "${context}" namespace "${cert_manager_namespace}"
+
+.PHONY: install-metrics-server
+install-metrics-server:
+	helm upgrade \
+		--install \
+		--create-namespace \
+		--kube-context ${context} \
+		--namespace metrics-server \
+		--repo https://kubernetes-sigs.github.io/metrics-server/ \
+		--version 3.11.0 \
+		metrics-server \
+		metrics-server
