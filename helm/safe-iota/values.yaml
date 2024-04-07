@@ -1,0 +1,59 @@
+transaction_service:
+  image:
+    name: safeglobal/safe-transaction-service
+    tag: v4.37.1
+  hostname: transaction-iota.smr.network
+  etherium:
+    node_url: https://json-rpc.evm.iotaledger.net
+    tracing_node_url: ""
+    l2_network: 1
+  django:
+    debug: false
+    superuser:
+      username: admin
+      email: servrox@1337.wf
+
+postgresql:
+  fullnameOverride: postgresql
+  auth:
+    postgresPassword: eseiqu2aiyieh7Iesai1Xae0
+  primary:
+    allowedTopologies:
+      - matchLabelExpressions:
+          - key: failure-domain.beta.kubernetes.io/zone
+            values:
+              - eu-central-1a
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    persistence:
+      size: 8Gi
+
+
+redis:
+  fullnameOverride: redis
+  architecture: standalone
+  auth:
+    enabled: false
+  primary:
+    allowedTopologies:
+      - matchLabelExpressions:
+          - key: failure-domain.beta.kubernetes.io/zone
+            values:
+              - eu-central-1a
+
+rabbitmq:
+  fullnameOverride: rabbitmq
+  clustering:
+    enabled: false
+  auth:
+    username: admin
+    existingPasswordSecret: rabbitmq
+    existingErlangSecret: rabbitmq
+  primary:
+    allowedTopologies:
+      - matchLabelExpressions:
+          - key: failure-domain.beta.kubernetes.io/zone
+            values:
+              - eu-central-1a

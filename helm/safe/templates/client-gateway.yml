@@ -9,7 +9,7 @@ spec:
     app: client-gateway
   ports:
     - name: http
-      port: 80
+      port: 3000
       protocol: TCP
       targetPort: http
 
@@ -35,30 +35,44 @@ spec:
           image: {{ .Values.client_gateway.image.name }}:{{ .Values.client_gateway.image.tag }}
           env:
             {{- with .Values.client_gateway }}
-            - name: CONFIG_SERVICE_URI
-              value: "https://{{ $.Values.config_service.hostname }}"
-            - name: ROCKET_PORT
-              value: "80"
-            - name: FEATURE_MESSAGES
-              value: "true"
-            - name: ROCKET_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: client-gateway
-                  key: rocket-secret-key
-            - name: WEBHOOK_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: client-gateway
-                  key: webhook-token
-            - name: REDIS_URI
-              value: redis://$(REDIS_MASTER_SERVICE_HOST):$(REDIS_MASTER_SERVICE_PORT)
-            - name: REDIS_URI_MAINNET
-              value: "$(REDIS_URI)"
-            - name: EXCHANGE_API_BASE_URI
-              value: {{ .exchange_api.base_uri | quote }}
-            - name: EXCHANGE_API_KEY
+            - name: SAFE_CONFIG_BASE_URI
+              value: "https://config-v2.smr.network"
+            - name: APPLICATION_PORT
+              value: "3000"
+            - name: REDIS_HOST
+              value: redis-master
+            - name: PRICES_PROVIDER_API_KEY
               value: {{ .exchange_api.key | quote }}
+            - name: AUTH_TOKEN
+              value: "12345"
+            - name: ALERTS_PROVIDER_SIGNING_KEY
+              value: "12345"
+            - name: ALERTS_PROVIDER_API_KEY
+              value: "12345"
+            - name: ALERTS_PROVIDER_ACCOUNT
+              value: "12345"
+            - name: ALERTS_PROVIDER_PROJECT
+              value: "12345"
+            - name: EMAIL_API_APPLICATION_CODE
+              value: "12345"
+            - name: EMAIL_API_FROM_EMAIL
+              value: "servrox@servrox.solutions"
+            - name: EMAIL_API_KEY
+              value: "12345"
+            - name: EMAIL_TEMPLATE_RECOVERY_TX
+              value: "12345"
+            - name: EMAIL_TEMPLATE_UNKNOWN_RECOVERY_TX
+              value: "12345"
+            - name: EMAIL_TEMPLATE_VERIFICATION_CODE
+              value: "12345"
+            - name: JWT_ISSUER
+              value: "12345"
+            - name: JWT_TOKEN
+              value: "12345"
+            - name: RELAY_PROVIDER_API_KEY_GNOSIS_CHAIN
+              value: "12345"
+            - name: RELAY_PROVIDER_API_KEY_SEPOLIA
+              value: "12345"
             {{- end }}
           resources:
             requests:
@@ -69,11 +83,7 @@ spec:
               memory: 400Mi
           ports:
             - name: http
-              containerPort: 80
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: http
+              containerPort: 3000
 
 
 ---

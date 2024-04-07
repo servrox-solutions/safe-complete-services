@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-scheduler
+  labels:
+    service: transaction-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction-scheduler
+  template:
+    metadata:
+      labels:
+        app: transaction-scheduler
+    spec:
+      initContainers:
+        - {{ include "safe.transaction_service.create_db_container" . | nindent 10 }}
+      containers:
+        - name: django
+          image: {{ .Values.transaction_service.image.name }}:{{ .Values.transaction_service.image.tag }}
+          imagePullPolicy: Always
+          command: [bash]
+          args:
+            - -c
+            - |
+              {{ .Files.Get "files/transaction-service/web/celery/scheduler/run.sh" | nindent 14 }}
+          env:
+            {{ include "safe.transaction_service.common_env" . | nindent 12 }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 300m
+              memory: 300Mi

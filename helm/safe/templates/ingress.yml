@@ -16,16 +16,6 @@ spec:
                 name: config
                 port:
                   number: 80
-    - host: {{ .Values.transaction_service.hostname }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: transaction-web
-                port:
-                  number: 80
 {{/*    {{- range .Values.web_core.hostnames }}*/}}
 {{/*    - host: {{ . }}*/}}
 {{/*      http:*/}}
@@ -47,12 +37,11 @@ spec:
               service:
                 name: client-gateway
                 port:
-                  number: 80
+                  number: 3000
   tls:
     - hosts:
 {{/*      {{- .Values.web_core.hostnames | toYaml | nindent 8 }}*/}}
         - {{ .Values.config_service.hostname }}
-        - {{ .Values.transaction_service.hostname }}
         - {{ .Values.client_gateway.hostname }}
       secretName: tls-cert
 

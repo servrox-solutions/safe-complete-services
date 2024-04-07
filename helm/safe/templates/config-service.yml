@@ -90,6 +90,8 @@ spec:
               value: "unix:/gunicorn/gunicorn.socket"
             - name: GUNICORN_BIND_PORT
               value: "8000"
+            - name: MEDIA_URL
+              value: https://{{ .hostname }}/media/
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -101,7 +103,7 @@ spec:
                   fieldPath: status.podIP
             # allow pod ip for readiness probes
             - name: DJANGO_ALLOWED_HOSTS
-              value: {{ join "," (list .hostname "$(POD_IP)") }}
+              value: {{ join "," (list .hostname "$(POD_IP)") }},localhost,localhost:3001
             - name: DJANGO_SUPERUSER_USERNAME
               value: {{ .django.superuser.username | quote }}
             - name: DJANGO_SUPERUSER_EMAIL

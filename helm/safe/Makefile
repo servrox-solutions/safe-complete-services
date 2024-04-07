@@ -1,7 +1,7 @@
 context = arn:aws:eks:eu-central-1:471128765712:cluster/gnosis-safe
 
-namespace = poc
-release_name = safe
+namespace = core-services
+release_name = safe-v2
 
 # install / upgrade chart
 .PHONY: install
