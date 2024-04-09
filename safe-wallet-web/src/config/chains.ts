@@ -19,6 +19,7 @@ let chains = networks.reduce<Chains>((result, { shortName, chainId }) => {
 chains = {
   ...chains,
   smr: '148',
+  iota: '8822',
 }
 
 export default chains
