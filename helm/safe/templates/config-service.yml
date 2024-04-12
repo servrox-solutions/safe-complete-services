@@ -77,6 +77,8 @@ spec:
               value: postgresql
             - name: POSTGRES_NAME
               value: config_service
+            - name: DOCKER_WEB_VOLUME
+              value: .:/app
             - name: POSTGRES_USER
               value: postgres
             - name: CGW_FLUSH_TOKEN
@@ -91,7 +93,7 @@ spec:
             - name: GUNICORN_BIND_PORT
               value: "8000"
             - name: MEDIA_URL
-              value: https://{{ .hostname }}/media/
+              value: https://{{ .hostname }}/static/media/
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -103,7 +105,7 @@ spec:
                   fieldPath: status.podIP
             # allow pod ip for readiness probes
             - name: DJANGO_ALLOWED_HOSTS
-              value: {{ join "," (list .hostname "$(POD_IP)") }},localhost,localhost:3001
+              value: {{ join "," (list .hostname "$(POD_IP)" "localhost" "localhost:3001" "safe-v2.smr.network" "safe.smr.network") }}
             - name: DJANGO_SUPERUSER_USERNAME
               value: {{ .django.superuser.username | quote }}
             - name: DJANGO_SUPERUSER_EMAIL

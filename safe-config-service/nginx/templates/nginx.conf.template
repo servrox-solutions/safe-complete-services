@@ -57,6 +57,12 @@ http {
           expires 365d;
     }
 
+    location /media {
+         alias /nginx/staticfiles/media;
+         expires 365d;
+    }
+
+
     location / {
           proxy_pass http://app_server/;
           proxy_set_header Host $host;

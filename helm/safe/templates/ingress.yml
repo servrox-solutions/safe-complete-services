@@ -4,6 +4,8 @@ metadata:
   name: safe
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://safe-v2.smr.network, https://safe.smr.network, http://localhost:3001"
 spec:
   rules:
     - host: {{ .Values.config_service.hostname }}
@@ -28,7 +30,7 @@ spec:
 {{/*                port:*/}}
 {{/*                  number: 8080*/}}
 {{/*    {{- end }}*/}}
-    - host: {{ .Values.client_gateway.hostname }}
+    - host: {{ .Values.client_gateway.hostname }}        
       http:
         paths:
           - path: /
