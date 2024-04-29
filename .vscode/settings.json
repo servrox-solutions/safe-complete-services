@@ -1,0 +1,33 @@
+{
+  "eslint.options": {
+    "extensions": [".js", ".jsx", ".html", ".ts", ".tsx"]
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html"
+  ],
+  "editor.formatOnSave": true,
+  "files.autoSave": "onFocusChange",
+  "editor.formatOnType": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "json.schemas": [
+    {
+      "url": "http://json.schemastore.org/prettierrc",
+      "fileMatch": [".prettierrc"]
+    }
+  ],
+  "git.inputValidationSubjectLength": 100,
+  "testing.openTesting": "neverOpen",
+  "jest.outputConfig": {
+    "revealOn": "run",
+    "revealWithFocus": "none",
+    "clearOnRun": "none"
+  }
+}
