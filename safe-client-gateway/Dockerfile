@@ -1,47 +1,38 @@
-# Build Image
-# match with version in rust-toolchain.toml file
-FROM rust:1.65.0-slim-buster as builder
+#
+# BUILD CONTAINER
+#
+FROM node:lts-iron as base
+ENV NODE_ENV production
+ENV YARN_CACHE_FOLDER /root/.yarn
+WORKDIR /app
+COPY --chown=node:node .yarn/releases ./.yarn/releases
+COPY --chown=node:node .yarn/patches ./.yarn/patches
+COPY --chown=node:node package.json yarn.lock .yarnrc.yml tsconfig*.json ./
+COPY --chown=node:node scripts/generate-abis.js ./scripts/generate-abis.js
+RUN --mount=type=cache,target=/root/.yarn yarn
+COPY --chown=node:node assets ./assets
+COPY --chown=node:node migrations ./migrations
+COPY --chown=node:node src ./src
+RUN --mount=type=cache,target=/root/.yarn yarn run build \
+    && rm -rf ./node_modules \
+    && yarn workspaces focus --production
 
-RUN set -ex; \ 
-  apt-get update; \
-  apt-get install -y --no-install-recommends \
-  pkg-config ca-certificates libssl-dev \
-  && rm -rf /var/lib/apt/lists/*
-
-ENV USER=root
-WORKDIR "/app"
-# Cache dependencies
-# We copy the toolchain requirements first. 
-# This will make it possible that all the stages after the init can be cached.
-COPY rust-toolchain.toml rust-toolchain.toml
-RUN cargo init
-COPY Cargo.toml Cargo.toml
-COPY Cargo.lock Cargo.lock
-RUN cargo build --release --locked
-
-COPY . .
+#
+# PRODUCTION CONTAINER
+#
+FROM node:iron-alpine as production
+USER node
 
 ARG VERSION
 ARG BUILD_NUMBER
-# Remove fingerprint of app to force recompile (without dependency recompile)
-RUN rm -rf target/release/.fingerprint/safe-client-gateway*
-RUN cargo build --release --locked
 
-# Runtime Image
-FROM debian:buster-slim
+ENV APPLICATION_VERSION=${VERSION} \
+    APPLICATION_BUILD_NUMBER=${BUILD_NUMBER} \
+    NODE_ENV=production
 
-
-WORKDIR "/app"
-
-ENV APP_USER=rust ROCKET_ENV=production ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=3666
-EXPOSE $ROCKET_PORT
-RUN useradd $APP_USER
-
-RUN set -ex; \ 
-  apt-get update; \
-  apt-get install -y --no-install-recommends \
-  ca-certificates libssl-dev \
-  && rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder --chown=rust:rust /app/target/release/safe-client-gateway ./
-CMD ["./safe-client-gateway"]
+COPY --chown=node:node --from=base /app/abis ./abis
+COPY --chown=node:node --from=base /app/node_modules ./node_modules
+COPY --chown=node:node --from=base /app/dist ./dist
+COPY --chown=node:node --from=base /app/assets ./assets
+COPY --chown=node:node --from=base /app/migrations ./migrations
+CMD [ "node", "dist/src/main.js" ]

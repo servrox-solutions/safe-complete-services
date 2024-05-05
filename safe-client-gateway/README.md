@@ -1,67 +1,97 @@
 # Safe Client Gateway
-[![Actions Status](https://github.com/safe-global/safe-client-gateway/workflows/safe-client-gateway/badge.svg?branch=main)](https://github.com/safe-global/safe-client-gateway/actions)
-[![Coverage Status](https://coveralls.io/repos/github/safe-global/safe-client-gateway/badge.svg)](https://coveralls.io/github/safe-global/safe-client-gateway)
+
+[![Coverage Status](https://coveralls.io/repos/github/safe-global/safe-client-gateway/badge.svg?branch=main)](https://coveralls.io/github/safe-global/safe-client-gateway?branch=main)
 
 ## Motivation
 
-This project is a gateway between the Safe clients ([Android](https://github.com/safe-global/safe-android)/ [iOS](https://github.com/safe-global/safe-ios)/ [web](https://github.com/safe-global/web-core)) and the Safe backend services ([transaction service](https://github.com/safe-global/safe-transaction-service) and Ethereum nodes). It is providing a more UI-oriented mapping and multi-sourced data structures for ease of integration and rendering.
+The Safe Client Gateway serves as a bridge for the Safe{Wallet} clients (Android, iOS, Web).
+
+It provides UI-oriented mappings and data structures for easier integration with several Safe{Core} services. In essence, it works as a bridge between the frontend and backend, ensuring smooth, efficient data exchange.
 
 ## Documentation
 
-- [Client Gateway Docs](https://safe.global/safe-client-gateway/)
-- [Swagger](https://safe-client.safe.global/index.html)
-- [Safe developer documentation](https://docs.gnosis-safe.io/)
+- [Client Gateway OpenAPI specification](https://safe-client.safe.global/index.html)
+- [Deploying the service](https://github.com/safe-global/safe-infrastructure)
 
-## Quickstart
+## Requirements
 
-This project requires `rustup` and `redis`
+- Node.js LTS (Iron) ([Node.js Release Schedule](https://nodejs.org/en/about/previous-releases)) – https://nodejs.org/en/
+- Docker Compose – https://docs.docker.com/compose/
 
-```bash
-git clone https://github.com/safe-global/safe-client-gateway.git
-cd safe-client-gateway
-cp .env.sample .env
-redis-server
-cargo run
-./add_rustfmt_git_hook.sh  # It installs a git precommit hook that will autoformat the code on every commit
-```
+## Installation
 
-After doing any change code must be formatted using [Rustfmt](https://github.com/rust-lang/rustfmt)
-- `cargo +nightly fmt --all`
-Auto formatting can also [be configured in the most common code editors](https://github.com/rust-lang/rustfmt#running-rustfmt-from-your-editor)
+**Optional:** If you have NVM installed, you can run `nvm use` in the root folder of the project to use the recommended
+Node version set for this project.
 
-## Configuration
-
-Rocket specific configurations (including databases) can be configured via the `Rocket.toml` for local development (see https://rocket.rs/v0.4/guide/configuration/#rockettoml).
-
-For configurations specific to this service the `.env` file can be used. See next section.
-
-## Environment
-
-Place a `.env` file in the root of the project containing URL pointing to the environment in which you want the gateway to run.
-
-The contents of the file should be the following (see `.env.sample` for an example)
-
-## Tests
-
-In order to run the test suite of the project:
-
-1. Have an instance of Redis running (as some of them test the integration with Redis).
+We use Yarn as the package manager for this project. Yarn is bundled with the project so to use it run:
 
 ```bash
-redis-server
+corepack enable && yarn install
 ```
 
-2. Make sure that the required environment variables are set (the following example assumes that Redis is runnning on the default port `6379`):
+The project requires some ABIs that are generated after install. In order to manually generate them, run:
 
 ```bash
-export REDIS_URI=redis://localhost:6379
-export REDIS_URI_MAINNET=redis://localhost:6379
+yarn generate-abis
 ```
 
-3. Run the tests
+## Running the app
+
+1. Start Redis instance. By default, it will start on port `6379` of `localhost`.
+
+```shell
+docker compose up -d redis
+```
+
+2. Start the Safe Client Gateway
 
 ```bash
-cargo test -- --test-threads 1
+# development
+yarn run start
+
+# watch mode
+yarn run start:dev
+
+# production mode
+yarn run start:prod
 ```
 
-By default, `cargo test` will execute the tests in the test suite in parallel. Because some of the tests update some shared local state (eg.: environment variables) the tests should be executed on a single thread – thus `--test-threads 1`.
+## Test
+
+The unit test suite contains tests that require a database connection.
+This project provides a `db-test` container which also validates the support for SSL connections.
+To start the container, make sure that the key for the self-signed certificate
+has the right permissions.
+
+```shell
+# disallow any access to world or group
+chmod 0600 db_config/test/server.key
+```
+
+With the right permissions set on the `server.key` file we can now start the `db-test` container:
+
+```shell
+# start the db-test container
+docker compose up -d db-test
+
+# unit tests
+yarn run test
+
+# e2e tests
+yarn run test:e2e
+
+# test coverage
+yarn run test:cov
+```
+
+## Linter and Style Guide
+
+We use [ESLint](https://eslint.org/) as a linter and [Prettier](https://prettier.io/) as a code formatter.
+You can run `yarn run lint` to execute ESLint and `yarn run format` to execute Prettier.
+
+These checks can be automatically executed using Git hooks. If you wish to install the provided git hooks:
+
+```shell
+yarn install
+yarn husky install
+```

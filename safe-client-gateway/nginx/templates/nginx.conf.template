@@ -1,9 +1,6 @@
 worker_processes auto;
 
 events {
-  worker_connections 10000;  # increase if you have lots of clients
-  # accept_mutex on;  # set to 'on' if nginx worker_processes > 1
-  use epoll;  # to enable for Linux 2.6+
 }
 
 http {
@@ -14,7 +11,7 @@ http {
 
   upstream app_server {
     ip_hash;  # For load-balancing
-    server gateway-web:${ROCKET_PORT} fail_timeout=0;
+    server web:${APPLICATION_PORT} fail_timeout=0;
     keepalive 32;
   }
 
