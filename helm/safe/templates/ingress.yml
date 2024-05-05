@@ -5,7 +5,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://safe-v2.smr.network, https://safe.smr.network, http://localhost:3001"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://safe-v2.smr.network, https://safe.smr.network, http://localhost:3001, http://localhost:8080, https://safe.iotaledger.net"
 spec:
   rules:
     - host: {{ .Values.config_service.hostname }}

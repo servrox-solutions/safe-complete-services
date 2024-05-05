@@ -22,8 +22,8 @@ config_service:
 
 client_gateway:
   image:
-    name: safeglobal/safe-client-gateway-nest
-    tag: v1.32.0
+    name: 471128765712.dkr.ecr.eu-central-1.amazonaws.com/safe-gateway-service-v2
+    tag: latest
   hostname: gateway-v2.smr.network
   exchange_api:
     base_uri: https://api.exchangeratesapi.io/latest
