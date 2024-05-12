@@ -115,7 +115,7 @@ const NetworkSelector = (props: { onChainSelect?: () => void }): ReactElement =>
     >
       {prodNets.map((chain) => renderMenuItem(chain.chainId, chain))}
 
-      <ListSubheader className={css.listSubHeader}>Testnets</ListSubheader>
+      {testNets.length > 0 && <ListSubheader className={css.listSubHeader}>Testnets</ListSubheader>}
 
       {testNets.map((chain) => renderMenuItem(chain.chainId, chain))}
     </Select>
