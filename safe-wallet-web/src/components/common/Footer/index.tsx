@@ -81,13 +81,13 @@ const Footer = (): ReactElement | null => {
             &nbsp;IOTA
           </ExternalLink>
           &nbsp;and
-          <span style={{ whiteSpace: 'nowrap' }}>
+          <span style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all' }}>
             <ExternalLink
               href="https://explorer.evm.shimmer.network/"
               style={{ color: '#00E0CA', fontWeight: 400 }}
               noIcon
             >
-              &nbsp;shimmer
+              &nbsp;Shimmer
             </ExternalLink>
             .
           </span>
@@ -100,15 +100,17 @@ const Footer = (): ReactElement | null => {
         </li>
 
         <li style={{ textAlign: 'center' }}>
-          Operated and maintained by
+          Website operated and maintained by
           <ExternalLink href="https://servrox.solutions/" style={{ color: '#858585', fontWeight: 400 }} noIcon>
             &nbsp;servrox solutions&nbsp;
           </ExternalLink>
-          on behalf of the
-          <ExternalLink href="https://iota.org/" style={{ color: '#0fc1b7', fontWeight: 400 }} noIcon>
-            &nbsp;IOTA Foundation
-          </ExternalLink>
-          .
+          and funded by
+          <span style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all' }}>
+            <ExternalLink href="https://tangle-association.ch/" style={{ color: '#2a66ff', fontWeight: 400 }} noIcon>
+              &nbsp;TEA
+            </ExternalLink>
+            .
+          </span>
         </li>
 
         <li>
