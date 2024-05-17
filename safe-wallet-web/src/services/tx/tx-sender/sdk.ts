@@ -6,6 +6,7 @@ import { ethers } from 'ethers'
 import { isWalletRejection, isHardwareWallet, isWalletConnect } from '@/utils/wallets'
 import { OperationType, type SafeTransaction } from '@safe-global/safe-core-sdk-types'
 import type { SafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getChainConfig } from '@safe-global/safe-gateway-typescript-sdk'
 import { SAFE_FEATURES } from '@safe-global/protocol-kit/dist/src/utils/safeVersions'
 import { hasSafeFeature } from '@/utils/safe-versions'
 import { createWeb3 } from '@/hooks/wallets/web3'
@@ -43,7 +44,7 @@ export const switchWalletChain = async (onboard: OnboardAPI, chainId: string): P
   }
 
   // Onboard doesn't update immediately and otherwise returns a stale wallet if we directly get its state
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const source$ = onboard.state.select('wallets').subscribe((newWallets) => {
       const newWallet = getConnectedWallet(newWallets)
       if (newWallet && newWallet.chainId === chainId) {
@@ -52,16 +53,34 @@ export const switchWalletChain = async (onboard: OnboardAPI, chainId: string): P
       }
     })
 
-    // Switch chain for all other wallets
-    currentWallet.provider
-      .request({
+    const UNKNOWN_CHAIN_ERROR_CODE = 4902
+    const hexChainId = toQuantity(parseInt(chainId))
+
+    try {
+      return await currentWallet.provider.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: toQuantity(parseInt(chainId)) }],
+        params: [{ chainId: hexChainId }],
       })
-      .catch(() => {
-        source$.unsubscribe()
-        resolve(currentWallet)
+    } catch (error) {
+      if ((error as Error & { code: number }).code !== UNKNOWN_CHAIN_ERROR_CODE) {
+        throw error
+      }
+
+      const chain = await getChainConfig(chainId)
+
+      return currentWallet.provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [
+          {
+            chainId: hexChainId,
+            chainName: chain.chainName,
+            nativeCurrency: chain.nativeCurrency,
+            rpcUrls: [chain.publicRpcUri.value],
+            blockExplorerUrls: [new URL(chain.blockExplorerUriTemplate.address).origin],
+          },
+        ],
       })
+    }
   })
 }
 
