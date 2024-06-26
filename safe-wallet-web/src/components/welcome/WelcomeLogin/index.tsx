@@ -37,7 +37,7 @@ const WelcomeLogin = () => {
   return (
     <Paper className={css.loginCard} data-testid="welcome-login">
       <Box className={css.loginContent}>
-        <SafeLogo style={{height: '70px'}} />
+        <SafeLogo style={{ height: '70px' }} />
         {/* <SvgIcon component={SafeLogo} inheritViewBox style={{height: '50px'}} sx={{ height: '24px', width: '80px', ml: '-8px' }} /> */}
 
         <Typography variant="h6" mt={6} fontWeight={700}>

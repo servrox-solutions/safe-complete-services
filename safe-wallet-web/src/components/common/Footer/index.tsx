@@ -78,7 +78,7 @@ const Footer = (): ReactElement | null => {
           <li>{'This is an unofficial distribution of Safe{Wallet}'}</li>
         )} */}
 
-         <li style={{ textAlign: 'center' }}>
+        <li style={{ textAlign: 'center' }}>
           <ExternalLink href="https://explorer.evm.iota.org/" style={{ color: '#0fc1b7', fontWeight: 400 }} noIcon>
             &nbsp;IOTA
           </ExternalLink>
