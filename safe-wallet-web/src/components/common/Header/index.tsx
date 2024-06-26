@@ -21,6 +21,7 @@ import { FEATURES } from '@/utils/chains'
 import { useHasFeature } from '@/hooks/useChains'
 import Track from '@/components/common/Track'
 import { OVERVIEW_EVENTS, OVERVIEW_LABELS } from '@/services/analytics'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 type HeaderProps = {
   onMenuToggle?: Dispatch<SetStateAction<boolean>>
@@ -41,6 +42,7 @@ const Header = ({ onMenuToggle, onBatchToggle }: HeaderProps): ReactElement => {
   const showSafeToken = safeAddress && !!getSafeTokenAddress(chainId)
   const router = useRouter()
   const enableWc = useHasFeature(FEATURES.NATIVE_WALLETCONNECT)
+  const isDarkMode = useDarkMode()
 
   // If on the home page, the logo should link to the Accounts or Welcome page, otherwise to the home page
   const logoHref = getLogoLink(router)
@@ -69,10 +71,9 @@ const Header = ({ onMenuToggle, onBatchToggle }: HeaderProps): ReactElement => {
 
       <div className={classnames(css.element, css.hideMobile, css.logo)}>
         <Link href={logoHref} passHref>
-          <SafeLogo alt="Safe logo" style={{ height: '50px' }} />
+          <SafeLogo style={{ height: '50px', fill: isDarkMode ? '#FFF' : '#000' }} alt="Safe logo" />
         </Link>
       </div>
-
       {showSafeToken && (
         <div className={classnames(css.element, css.hideMobile)}>
           <SafeTokenWidget />

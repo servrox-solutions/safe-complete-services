@@ -10,12 +10,14 @@ import { useHasSafes } from '../MyAccounts/useAllSafes'
 import Track from '@/components/common/Track'
 import { useCallback, useEffect, useState } from 'react'
 import WalletLogin from './WalletLogin'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 const WelcomeLogin = () => {
   const router = useRouter()
   const wallet = useWallet()
   const { isLoaded, hasSafes } = useHasSafes()
   const [shouldRedirect, setShouldRedirect] = useState(false)
+  const isDarkMode = useDarkMode()
 
   const onLogin = useCallback(() => {
     setShouldRedirect(true)
@@ -37,7 +39,7 @@ const WelcomeLogin = () => {
   return (
     <Paper className={css.loginCard} data-testid="welcome-login">
       <Box className={css.loginContent}>
-        <SafeLogo style={{ height: '70px' }} />
+        <SafeLogo style={{ height: '70px', fill: isDarkMode ? '#FFF' : '#000' }} />
         {/* <SvgIcon component={SafeLogo} inheritViewBox style={{height: '50px'}} sx={{ height: '24px', width: '80px', ml: '-8px' }} /> */}
 
         <Typography variant="h6" mt={6} fontWeight={700}>

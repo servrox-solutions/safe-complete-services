@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import useWallet from '@/hooks/wallets/useWallet'
 import SafeLogo from '@/public/images/logo-no-text.svg'
 import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
+import { useDarkMode } from '../../../../hooks/useDarkMode'
 
 const TxStatusWidget = ({
   step,
@@ -29,6 +30,7 @@ const TxStatusWidget = ({
   const { safe } = useSafeInfo()
   const { nonceNeeded } = useContext(SafeTxContext)
   const { threshold } = safe
+  const isDarkMode = useDarkMode()
 
   const { executionInfo = undefined } = txSummary || {}
   const { confirmationsSubmitted = 0 } = isMultisigExecutionInfo(executionInfo) ? executionInfo : {}
@@ -40,7 +42,12 @@ const TxStatusWidget = ({
     <Paper>
       <div className={css.header}>
         <Typography fontWeight="700" display="flex" alignItems="center" gap={1}>
-          <SafeLogo width={16} height={16} className={css.logo} />
+          <SafeLogo
+            style={{ height: '50px', fill: isDarkMode ? '#FFF' : '#000' }}
+            width={16}
+            height={16}
+            className={css.logo}
+          />
           {isMessage ? 'Message' : 'Transaction'} status
         </Typography>
 
