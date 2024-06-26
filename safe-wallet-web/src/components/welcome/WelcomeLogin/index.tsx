@@ -1,5 +1,5 @@
 import { AppRoutes } from '@/config/routes'
-import { Paper, SvgIcon, Typography, Divider, Box, Button, Link } from '@mui/material'
+import { Paper, Typography, Divider, Box, Button, Link } from '@mui/material'
 import SafeLogo from '@/public/images/logo.svg'
 import css from './styles.module.css'
 import { useRouter } from 'next/router'
