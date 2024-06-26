@@ -1,6 +1,6 @@
 # safe-complete-services
 
-Collection of all required safe services, which can be run locally by a single docker-compose.yml
+Collection of all required safe services, which can be run locally by a single docker-compose.yml.
 
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
