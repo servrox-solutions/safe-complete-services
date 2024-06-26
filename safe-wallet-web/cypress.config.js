@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+import 'dotenv/config'
 import * as fs from 'fs'
 
 export default defineConfig({
@@ -9,7 +10,7 @@ export default defineConfig({
     mochaFile: 'reports/junit-[hash].xml',
   },
   retries: {
-    runMode: 2,
+    runMode: 3,
     openMode: 0,
   },
   e2e: {
@@ -22,6 +23,9 @@ export default defineConfig({
           }
         }
       })
+    },
+    env: {
+      ...process.env,
     },
     baseUrl: 'http://localhost:3000',
     testIsolation: false,

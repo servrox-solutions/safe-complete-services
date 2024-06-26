@@ -17,6 +17,7 @@ declare module '@mui/material/styles' {
     backdrop: Palette['primary']
     static: Palette['primary']
   }
+
   export interface PaletteOptions {
     border: PaletteOptions['primary']
     logo: PaletteOptions['primary']
@@ -33,6 +34,7 @@ declare module '@mui/material/styles' {
   export interface PaletteColor {
     background?: string
   }
+
   export interface SimplePaletteColorOptions {
     background?: string
   }
@@ -52,8 +54,15 @@ declare module '@mui/material/Button' {
   export interface ButtonPropsColorOverrides {
     background: true
   }
+
   export interface ButtonPropsVariantOverrides {
     danger: true
+  }
+}
+
+declare module '@mui/material/IconButton' {
+  export interface IconButtonPropsColorOverrides {
+    border: true
   }
 }
 
@@ -271,6 +280,14 @@ const createSafeTheme = (mode: PaletteMode): Theme => {
           root: {
             textTransform: 'none',
           },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          colorSuccess: ({ theme }) => ({
+            backgroundColor: theme.palette.secondary.light,
+            height: '24px',
+          }),
         },
       },
       MuiAlert: {

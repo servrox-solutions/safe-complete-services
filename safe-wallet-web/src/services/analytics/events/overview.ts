@@ -38,10 +38,12 @@ export const OVERVIEW_EVENTS = {
   TOTAL_SAFES_OWNED: {
     action: 'Total Safes owned',
     category: OVERVIEW_CATEGORY,
+    event: EventType.META,
   },
   TOTAL_SAFES_WATCHLIST: {
     action: 'Total Safes watchlist',
     category: OVERVIEW_CATEGORY,
+    event: EventType.META,
   },
   SIDEBAR: {
     action: 'Sidebar',
@@ -136,6 +138,11 @@ export const OVERVIEW_EVENTS = {
   PROCEED_WITH_TX: {
     event: EventType.CLICK,
     action: 'Proceed with transaction',
+    category: OVERVIEW_CATEGORY,
+  },
+  OPEN_ACTIVITY_APP: {
+    event: EventType.CLICK,
+    action: 'Open activity app from widget',
     category: OVERVIEW_CATEGORY,
   },
 }

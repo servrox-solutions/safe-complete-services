@@ -1,7 +1,7 @@
 import type { SafeVersion } from '@safe-global/safe-core-sdk-types'
 import { type BrowserProvider, type Provider } from 'ethers'
 
-import { getSafeInfo, type SafeInfo, type ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getSafeInfo, type SafeInfo, type ChainInfo, relayTransaction } from '@safe-global/safe-gateway-typescript-sdk'
 import {
   getReadOnlyFallbackHandlerContract,
   getReadOnlyGnosisSafeContract,
@@ -19,7 +19,7 @@ import { AppRoutes } from '@/config/routes'
 import { SAFE_APPS_EVENTS, trackEvent } from '@/services/analytics'
 import type { AppDispatch, AppThunk } from '@/store'
 import { showNotification } from '@/store/notificationsSlice'
-import { SafeFactory } from '@safe-global/protocol-kit'
+import { predictSafeAddress, SafeFactory } from '@safe-global/protocol-kit'
 import type Safe from '@safe-global/protocol-kit'
 import type { DeploySafeProps } from '@safe-global/protocol-kit'
 import { createEthersAdapter, isValidSafeVersion } from '@/hooks/coreSDK/safeCoreSDK'
@@ -28,7 +28,6 @@ import { backOff } from 'exponential-backoff'
 import { LATEST_SAFE_VERSION } from '@/config/constants'
 import { EMPTY_DATA, ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import { formatError } from '@/utils/formatters'
-import { sponsoredCall } from '@/services/tx/relaying'
 
 export type SafeCreationProps = {
   owners: string[]
@@ -87,9 +86,19 @@ export const createNewSafe = async (
 export const computeNewSafeAddress = async (
   ethersProvider: BrowserProvider,
   props: DeploySafeProps,
+  chainId: string,
 ): Promise<string> => {
-  const safeFactory = await getSafeFactory(ethersProvider)
-  return safeFactory.predictSafeAddress(props.safeAccountConfig, props.saltNonce)
+  const ethAdapter = await createEthersAdapter(ethersProvider)
+
+  return predictSafeAddress({
+    ethAdapter,
+    chainId: BigInt(chainId),
+    safeAccountConfig: props.safeAccountConfig,
+    safeDeploymentConfig: {
+      saltNonce: props.saltNonce,
+      safeVersion: LATEST_SAFE_VERSION as SafeVersion,
+    },
+  })
 }
 
 /**
@@ -299,17 +308,13 @@ export const relaySafeCreation = async (
   owners: string[],
   threshold: number,
   saltNonce: number,
-  safeVersion?: SafeVersion,
+  version?: SafeVersion,
 ) => {
-  const readOnlyProxyFactoryContract = await getReadOnlyProxyFactoryContract(
-    chain.chainId,
-    safeVersion ?? LATEST_SAFE_VERSION,
-  )
+  const safeVersion = version ?? LATEST_SAFE_VERSION
+
+  const readOnlyProxyFactoryContract = await getReadOnlyProxyFactoryContract(chain.chainId, safeVersion)
   const proxyFactoryAddress = await readOnlyProxyFactoryContract.getAddress()
-  const readOnlyFallbackHandlerContract = await getReadOnlyFallbackHandlerContract(
-    chain.chainId,
-    safeVersion ?? LATEST_SAFE_VERSION,
-  )
+  const readOnlyFallbackHandlerContract = await getReadOnlyFallbackHandlerContract(chain.chainId, safeVersion)
   const fallbackHandlerAddress = await readOnlyFallbackHandlerContract.getAddress()
   const readOnlySafeContract = await getReadOnlyGnosisSafeContract(chain)
   const safeContractAddress = await readOnlySafeContract.getAddress()
@@ -342,10 +347,10 @@ export const relaySafeCreation = async (
     saltNonce,
   ])
 
-  const relayResponse = await sponsoredCall({
-    chainId: chain.chainId,
+  const relayResponse = await relayTransaction(chain.chainId, {
     to: proxyFactoryAddress,
     data: createProxyWithNonceCallData,
+    version: safeVersion,
   })
 
   return relayResponse.taskId

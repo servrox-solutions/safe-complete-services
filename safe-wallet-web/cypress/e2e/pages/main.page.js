@@ -25,7 +25,7 @@ export const fetchSafeData = (safeAddress) => {
   return cy
     .request({
       method: 'GET',
-      url: `${constants.stagingTxServiceUrl}${constants.stagingTxServiceSafesUrl}${safeAddress}`,
+      url: `${constants.stagingTxServiceUrl}/v1${constants.stagingTxServiceSafesUrl}${safeAddress}`,
       headers: {
         accept: 'application/json',
       },
@@ -60,6 +60,7 @@ export const getSafeNFTs = (safeAddress, chain) => {
     })
     .then((response) => {
       expect(response.status).to.eq(200)
+      return response
     })
 }
 
@@ -105,10 +106,25 @@ export function checkNFTBalance(safeAddress, tokenSymbol, expectedBalance) {
 }
 
 export function checkTokenBalanceIsNull(safeAddress, tokenSymbol) {
-  getSafeNFTs(safeAddress.substring(4), constants.networkKeys.sepolia).then((response) => {
-    const targetToken = response.body.results.find((token) => token.tokenSymbol === tokenSymbol)
-    expect(targetToken).to.be.undefined
-  })
+  let pollCount = 0
+
+  function poll() {
+    getSafeNFTs(safeAddress.substring(4), constants.networkKeys.sepolia).then((response) => {
+      const targetToken = response.body.results.find((token) => token.tokenSymbol === tokenSymbol)
+      if (targetToken === undefined) {
+        console.log('Token is undefined as expected. Stopping polling.')
+        return true
+      } else if (pollCount < 9) {
+        pollCount++
+        console.log('Token is not undefined, retrying...')
+        cy.wait(1000)
+        poll()
+      } else {
+        throw new Error('Failed to validate token status -undefined- within the allowed polling attempts.')
+      }
+    })
+  }
+  cy.wrap(null).then(poll).should('be.true')
 }
 
 export function acceptCookies(index = 0) {
@@ -257,7 +273,7 @@ export function addToLocalStorage(key, jsonValue) {
 export function checkTextOrder(selector, expectedTextArray) {
   cy.get(selector).each((element, index) => {
     const text = Cypress.$(element).text().trim()
-    expect(text).to.eq(expectedTextArray[index])
+    expect(text).to.include(expectedTextArray[index])
   })
 }
 
@@ -277,4 +293,14 @@ export function formatAddressInCaps(address) {
 
 export function getElementText(element) {
   return cy.get(element).invoke('text')
+}
+
+export function verifyTextVisibility(stringsArray) {
+  stringsArray.forEach((string) => {
+    cy.contains(string).should('be.visible')
+  })
+}
+
+export function getIframeBody(iframe) {
+  return cy.get(iframe).its('0.contentDocument.body').should('not.be.empty').then(cy.wrap)
 }

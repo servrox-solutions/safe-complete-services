@@ -1,5 +1,7 @@
 import * as main from './main.page'
 import * as addressbook from '../pages/address_book.page'
+import * as createTx from '../pages/create_tx.pages'
+import { tableRow } from '../pages/address_book.page'
 
 let etherscanLinkSepolia = 'a[aria-label="View on sepolia.etherscan.io"]'
 export const balanceSingleRow = '[aria-labelledby="tableTitle"] > tbody tr'
@@ -28,6 +30,8 @@ const hideTokenDefaultString = 'Hide tokens'
 const assetNameSortBtnStr = 'Asset'
 const assetBalanceSortBtnStr = 'Balance'
 export const sendBtnStr = 'Send'
+export const confirmBtnStr = 'Confirm'
+export const executeBtnStr = 'Execute'
 const sendTokensStr = 'Send tokens'
 
 const pageRowsDefault = '25'
@@ -40,14 +44,16 @@ const pageCountString1to25 = '1–25 of'
 const pageCountString1to10 = '1–10 of'
 const pageCountString10to20 = '11–20 of'
 
-export const fiatRegex = new RegExp(`([0-9]{1,3},)*[0-9]{1,3}.[0-9]{2}`)
+export const fiatRegex = new RegExp(`\\$?(([0-9]{1,3},)*[0-9]{1,3}(\\.[0-9]{2})?|0)`)
 
 export const tokenListOptions = {
   allTokens: 'span[data-track="assets: Show all tokens"]',
   default: 'span[data-track="assets: Show default tokens"]',
 }
-export const currencyEUR = 'EUR'
-export const currencyUSD = 'USD'
+export const currencyEUR = '€'
+export const currencyOptionEUR = 'EUR'
+export const currency$ = '$'
+export const currencyCAD = 'CAD'
 
 export const currentcySepoliaFormat = '0.09996 ETH'
 
@@ -134,6 +140,32 @@ export function clickOnSendBtn(index) {
     })
 }
 
+export function clickOnConfirmBtn(index) {
+  cy.wait(2000)
+  cy.get(createTx.transactionItem)
+    .eq(index)
+    .within(() => {
+      cy.get('button')
+        .contains(confirmBtnStr)
+        .then((elements) => {
+          cy.wrap(elements[0]).click()
+        })
+    })
+}
+
+export function clickOnExecuteBtn(index) {
+  cy.wait(2000)
+  cy.get(createTx.transactionItem)
+    .eq(index)
+    .within(() => {
+      cy.get('button')
+        .contains(executeBtnStr)
+        .then((elements) => {
+          cy.wrap(elements[0]).click()
+        })
+    })
+}
+
 export function showSendBtn(index) {
   cy.get('button')
     .contains(sendBtnStr)
@@ -163,10 +195,12 @@ export function clickOnTokenBalanceSortBtn() {
 export function verifyTokenNamesOrder(option = 'ascending') {
   const tokens = []
 
-  main.getTextToArray('tr p', tokens)
+  main.getTextToArray(tableRow, tokens)
 
   cy.wrap(tokens).then((arr) => {
+    cy.log('*** Original array ' + tokens)
     let sortedNames = [...arr].sort()
+    cy.log('*** Sorted array ' + sortedNames)
     if (option == 'descending') sortedNames = [...arr].sort().reverse()
     expect(arr).to.deep.equal(sortedNames)
   })

@@ -1,8 +1,8 @@
 import useConnectWallet from '@/components/common/ConnectWallet/useConnectWallet'
 import useWallet from '@/hooks/wallets/useWallet'
-import { isSocialLoginWallet } from '@/services/mpc/SocialLoginModule'
 import { Box, Button, Typography } from '@mui/material'
 import EthHashInfo from '@/components/common/EthHashInfo'
+import WalletIcon from '@/components/common/WalletIcon'
 
 const WalletLogin = ({ onLogin }: { onLogin: () => void }) => {
   const wallet = useWallet()
@@ -13,9 +13,7 @@ const WalletLogin = ({ onLogin }: { onLogin: () => void }) => {
     onLogin()
   }
 
-  const isSocialLogin = isSocialLoginWallet(wallet?.label)
-
-  if (wallet !== null && !isSocialLogin) {
+  if (wallet !== null) {
     return (
       <Box sx={{ width: '100%' }}>
         <Button variant="contained" sx={{ padding: '8px 16px' }} fullWidth onClick={onLogin}>
@@ -41,14 +39,7 @@ const WalletLogin = ({ onLogin }: { onLogin: () => void }) => {
                 />
               )}
             </Box>
-            {wallet.icon && (
-              <img
-                width="24px"
-                height="24px"
-                src={`data:image/svg+xml;utf8,${encodeURIComponent(wallet.icon)}`}
-                alt="icon"
-              />
-            )}
+            {wallet.icon && <WalletIcon icon={wallet.icon} provider={wallet.label} width={24} height={24} />}
           </Box>
         </Button>
       </Box>

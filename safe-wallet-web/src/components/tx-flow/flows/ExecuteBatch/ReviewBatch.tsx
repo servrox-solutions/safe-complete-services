@@ -1,6 +1,8 @@
+import useWallet from '@/hooks/wallets/useWallet'
+import { assertWalletChain } from '@/services/tx/tx-sender/sdk'
 import { CircularProgress, Typography, Button, CardActions, Divider, Alert } from '@mui/material'
 import useAsync from '@/hooks/useAsync'
-import { FEATURES } from '@safe-global/safe-gateway-typescript-sdk'
+import { FEATURES } from '@/utils/chains'
 import type { TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
 import { getReadOnlyMultiSendCallOnlyContract } from '@/services/contracts/safeContracts'
 import { useCurrentChain } from '@/hooks/useChains'
@@ -35,6 +37,8 @@ import { trackEvent } from '@/services/analytics'
 import { TX_EVENTS, TX_TYPES } from '@/services/analytics/events/transactions'
 import { isWalletRejection } from '@/utils/wallets'
 import WalletRejectionError from '@/components/tx/SignOrExecuteForm/WalletRejectionError'
+import { LATEST_SAFE_VERSION } from '@/config/constants'
+import useUserNonce from '@/components/tx/AdvancedParams/useUserNonce'
 
 export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
   const [isSubmittable, setIsSubmittable] = useState<boolean>(true)
@@ -47,6 +51,8 @@ export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
   const { setTxFlow } = useContext(TxModalContext)
   const [gasPrice] = useGasPrice()
 
+  const userNonce = useUserNonce()
+
   const maxFeePerGas = gasPrice?.maxFeePerGas
   const maxPriorityFeePerGas = gasPrice?.maxPriorityFeePerGas
 
@@ -56,6 +62,7 @@ export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
   const canRelay = hasRemainingRelays(relays)
   const willRelay = canRelay && executionMethod === ExecutionMethod.RELAY
   const onboard = useOnboard()
+  const wallet = useWallet()
 
   const [txsWithDetails, error, loading] = useAsync<TransactionDetails[]>(() => {
     if (!chain?.chainId) return
@@ -83,20 +90,25 @@ export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
   }, [txsWithDetails, multiSendTxs])
 
   const onExecute = async () => {
-    if (!onboard || !multiSendTxData || !multiSendContract || !txsWithDetails || !gasPrice) return
+    if (!userNonce || !onboard || !wallet || !multiSendTxData || !multiSendContract || !txsWithDetails || !gasPrice)
+      return
 
     const overrides: Overrides = isEIP1559
       ? { maxFeePerGas: maxFeePerGas?.toString(), maxPriorityFeePerGas: maxPriorityFeePerGas?.toString() }
       : { gasPrice: maxFeePerGas?.toString() }
 
+    overrides.nonce = userNonce
+
+    await assertWalletChain(onboard, safe.chainId)
+
     await dispatchBatchExecution(
       txsWithDetails,
       multiSendContract,
       multiSendTxData,
-      onboard,
-      safe.chainId,
+      wallet.provider,
+      wallet.address,
       safe.address.value,
-      overrides,
+      overrides as Overrides & { nonce: number },
     )
   }
 
@@ -109,6 +121,7 @@ export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
       multiSendTxData,
       safe.chainId,
       safe.address.value,
+      safe.version ?? LATEST_SAFE_VERSION,
     )
   }
 
@@ -134,7 +147,7 @@ export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
       return
     }
 
-    trackEvent({ ...TX_EVENTS.EXECUTE, label: TX_TYPES.batch })
+    trackEvent({ ...TX_EVENTS.EXECUTE, label: TX_TYPES.bulk_execute })
   }
 
   const submitDisabled = loading || !isSubmittable || !gasPrice
