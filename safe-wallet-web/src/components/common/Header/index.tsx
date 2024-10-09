@@ -12,7 +12,6 @@ import SafeTokenWidget from '@/components/common/SafeTokenWidget'
 import NotificationCenter from '@/components/notification-center/NotificationCenter'
 import { AppRoutes } from '@/config/routes'
 import SafeLogo from '@/public/images/logo.svg'
-import SafeLogoMobile from '@/public/images/logo-no-text.svg'
 import Link from 'next/link'
 import useSafeAddress from '@/hooks/useSafeAddress'
 import BatchIndicator from '@/components/batch/BatchIndicator'
@@ -22,6 +21,7 @@ import { useHasFeature } from '@/hooks/useChains'
 import Track from '@/components/common/Track'
 import { OVERVIEW_EVENTS, OVERVIEW_LABELS } from '@/services/analytics'
 import { useSafeTokenEnabled } from '@/hooks/useSafeTokenEnabled'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 type HeaderProps = {
   onMenuToggle?: Dispatch<SetStateAction<boolean>>
@@ -41,6 +41,8 @@ const Header = ({ onMenuToggle, onBatchToggle }: HeaderProps): ReactElement => {
   const showSafeToken = useSafeTokenEnabled()
   const router = useRouter()
   const enableWc = useHasFeature(FEATURES.NATIVE_WALLETCONNECT)
+
+  const isDarkMode = useDarkMode()
 
   // If on the home page, the logo should link to the Accounts or Welcome page, otherwise to the home page
   const logoHref = getLogoLink(router)
@@ -71,13 +73,13 @@ const Header = ({ onMenuToggle, onBatchToggle }: HeaderProps): ReactElement => {
 
       <div className={classnames(css.element, css.logoMobile)}>
         <Link href={logoHref} passHref>
-          <SafeLogoMobile alt="Safe logo" />
+          <SafeLogo style={{ height: '50px', fill: isDarkMode ? '#FFF' : '#000' }} alt="Safe logo" />
         </Link>
       </div>
 
       <div className={classnames(css.element, css.hideMobile, css.logo)}>
         <Link href={logoHref} passHref>
-          <SafeLogo alt="Safe logo" />
+          <SafeLogo alt="Safe logo" style={{ height: '50px', fill: isDarkMode ? '#FFF' : '#000' }} />
         </Link>
       </div>
 

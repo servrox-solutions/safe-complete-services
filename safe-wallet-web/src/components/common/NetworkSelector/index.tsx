@@ -3,7 +3,7 @@ import { useDarkMode } from '@/hooks/useDarkMode'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import type { SelectChangeEvent } from '@mui/material'
-import { ListSubheader, MenuItem, Select, Skeleton } from '@mui/material'
+import { MenuItem, Select, Skeleton } from '@mui/material'
 import partition from 'lodash/partition'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import useChains from '@/hooks/useChains'
@@ -22,10 +22,10 @@ const NetworkSelector = (props: { onChainSelect?: () => void }): ReactElement =>
   const isDarkMode = useDarkMode()
   const theme = useTheme()
   const { configs } = useChains()
-  const chainId = useChainId()
+  const chainId = useChainId() || '8822'
   const router = useRouter()
   const isWalletConnected = !!useWallet()
-  const [testNets, prodNets] = useMemo(() => partition(configs, (config) => config.isTestnet), [configs])
+  const [_, prodNets] = useMemo(() => partition(configs, (config) => config.isTestnet), [configs])
   const chains = useAppSelector(selectChains)
 
   const getNetworkLink = useCallback(
@@ -113,10 +113,6 @@ const NetworkSelector = (props: { onChainSelect?: () => void }): ReactElement =>
       }}
     >
       {prodNets.map((chain) => renderMenuItem(chain.chainId, false))}
-
-      <ListSubheader className={css.listSubHeader}>Testnets</ListSubheader>
-
-      {testNets.map((chain) => renderMenuItem(chain.chainId, false))}
     </Select>
   ) : (
     <Skeleton width={94} height={31} sx={{ mx: 2 }} />

@@ -15,6 +15,7 @@ import SafeLogo from '@/public/images/logo-no-text.svg'
 import { TxSecurityProvider } from '@/components/tx/security/shared/TxSecurityContext'
 import ChainIndicator from '@/components/common/ChainIndicator'
 import SecurityWarnings from '@/components/tx/security/SecurityWarnings'
+import { useDarkMode } from '../../../../hooks/useDarkMode'
 
 const TxLayoutHeader = ({
   hideNonce,
@@ -80,6 +81,7 @@ const TxLayout = ({
 }: TxLayoutProps): ReactElement => {
   const [statusVisible, setStatusVisible] = useState<boolean>(true)
 
+  const isDarkMode = useDarkMode()
   const theme = useTheme()
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
   const isDesktop = useMediaQuery(theme.breakpoints.down('lg'))
@@ -108,7 +110,7 @@ const TxLayout = ({
                 size="large"
                 onClick={toggleStatus}
               >
-                <SafeLogo width={16} height={16} />
+                <SafeLogo style={{ height: '50px', fill: isDarkMode ? '#FFF' : '#000' }} width={16} height={16} />
               </IconButton>
             )}
 
