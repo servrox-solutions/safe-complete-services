@@ -170,7 +170,7 @@ export const _useTxFlowApi = (chainId: string, safeAddress: string): WalletSDK |
           throw new Error(`Chain ${chainId} not supported`)
         }
 
-        if (prompt(`${appInfo.name} wants to switch to ${cfg.shortName}. Do you want to continue?`)) {
+        if (confirm(`${appInfo.name} wants to switch to ${cfg.shortName}. Do you want to continue?`)) {
           router.push({
             pathname: AppRoutes.index,
             query: {
@@ -208,7 +208,9 @@ export const _useTxFlowApi = (chainId: string, safeAddress: string): WalletSDK |
       },
 
       getCreateCallTransaction(data) {
-        const createCallDeployment = getCreateCallContractDeployment(safe.chainId, safe.version)
+        const createCallDeployment = currentChain
+          ? getCreateCallContractDeployment(currentChain, safe.version)
+          : undefined
         if (!createCallDeployment) {
           throw new Error('No CreateCall deployment found for chain and safe version')
         }

@@ -128,7 +128,7 @@ export function changeCurrency(currency) {
 }
 
 export function clickOnSendBtn(index) {
-  cy.wait(2000)
+  cy.wait(4000)
   cy.get(addressbook.tableRow)
     .eq(index)
     .within(() => {
@@ -241,6 +241,8 @@ export function checkHiddenTokenBtnCounter(value) {
 }
 
 export function verifyEachRowHasCheckbox(state) {
+  const tokens = [currencyTestTokenB, currencyTestTokenA]
+  main.verifyTextVisibility(tokens)
   cy.get(tokenListTable).within(() => {
     cy.get('tbody').within(() => {
       cy.get('tr').each(($row) => {
@@ -264,9 +266,9 @@ export function verifyTokenIsPresent(token) {
 
 export function selectTokenList(option) {
   cy.get(tokenListDropdown)
-    .click()
+    .click({ force: true })
     .then(() => {
-      cy.get(option).click()
+      cy.get(option).click({ force: true })
     })
 }
 

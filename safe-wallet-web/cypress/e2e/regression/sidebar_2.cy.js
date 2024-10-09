@@ -19,8 +19,6 @@ describe('Sidebar added sidebar tests', () => {
   beforeEach(() => {
     cy.visit(constants.BALANCE_URL + staticSafes.SEP_STATIC_SAFE_9)
     cy.wait(2000)
-    cy.clearLocalStorage()
-    main.acceptCookies()
     main.addToLocalStorage(constants.localStorageKeys.SAFE_v2__addedSafes, ls.addedSafes.set2)
     main.addToLocalStorage(constants.localStorageKeys.SAFE_v2__addressBook, ls.addressBookData.addedSafes)
   })
@@ -37,8 +35,7 @@ describe('Sidebar added sidebar tests', () => {
     sideBar.verifySafeNameExists(newSafeName)
   })
 
-  // TODO: Update to remove from watch list
-  it.skip('Verify a safe can be removed', () => {
+  it('Verify a safe can be removed', () => {
     sideBar.openSidebar()
     sideBar.removeSafeItem(addedSafe900)
     sideBar.verifySafeRemoved([addedSafe900])
@@ -49,15 +46,8 @@ describe('Sidebar added sidebar tests', () => {
     sideBar.checkCurrencyInHeader(assets.currency$)
   })
 
-  // Waiting for endpoint from CGW
-  it.skip('Verify "wallet" tag counter if the safe has tx ready for execution', () => {
+  it('Verify "wallet" tag counter if the safe has tx ready for execution', () => {
     sideBar.openSidebar()
-    sideBar.verifyMissingSignature(staticSafe200)
-  })
-
-  // Waiting for endpoint from CGW
-  it.skip('Verify "Wallet" tag counter only shows for owners', () => {
-    sideBar.openSidebar()
-    sideBar.verifyQueuedTx(staticSafe200)
+    sideBar.verifyNumberOfPendingTxTag(1)
   })
 })

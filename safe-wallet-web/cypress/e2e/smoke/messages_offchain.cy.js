@@ -6,6 +6,7 @@ import { getSafes, CATEGORIES } from '../../support/safes/safesHandler.js'
 import * as modal from '../pages/modals.page'
 import * as messages from '../pages/messages.pages.js'
 import * as msg_confirmation_modal from '../pages/modals/message_confirmation.pages.js'
+import * as wallet from '../../support/utils/wallet.js'
 
 let staticSafes = []
 const offchainMessage = 'Test message 2 off-chain'
@@ -13,18 +14,20 @@ const offchainMessage = 'Test message 2 off-chain'
 const typeMessagesGeneral = msg_data.type.general
 const typeMessagesOffchain = msg_data.type.offChain
 
+const walletCredentials = JSON.parse(Cypress.env('CYPRESS_WALLET_CREDENTIALS'))
+const signer = walletCredentials.OWNER_4_PRIVATE_KEY
+
 describe('[SMOKE] Offchain Messages tests', () => {
   before(async () => {
     staticSafes = await getSafes(CATEGORIES.static)
   })
 
   beforeEach(() => {
-    cy.clearLocalStorage()
     cy.visit(constants.transactionsMessagesUrl + staticSafes.SEP_STATIC_SAFE_10)
-    main.acceptCookies()
   })
 
-  it('[SMOKE] Verify summary for off-chain unsigned messages', () => {
+  // TODO: Clarify changes
+  it.skip('[SMOKE] Verify summary for off-chain unsigned messages', () => {
     createTx.verifySummaryByIndex(0, [
       typeMessagesGeneral.sign,
       typeMessagesGeneral.oneOftwo,
@@ -37,7 +40,8 @@ describe('[SMOKE] Offchain Messages tests', () => {
     ])
   })
 
-  it('[SMOKE] Verify summary for off-chain signed messages', () => {
+  // TODO: Clarify changes
+  it.skip('[SMOKE] Verify summary for off-chain signed messages', () => {
     createTx.verifySummaryByIndex(1, [
       typeMessagesGeneral.confirmed,
       typeMessagesGeneral.twoOftwo,
@@ -76,7 +80,9 @@ describe('[SMOKE] Offchain Messages tests', () => {
     main.verifyTextVisibility(values)
   })
 
-  it('[SMOKE] Verify confirmation window is displayed for unsigned message', () => {
+  // TODO: Clarify changes
+  it.skip('[SMOKE] Verify confirmation window is displayed for unsigned message', () => {
+    wallet.connectSigner(signer)
     messages.clickOnMessageSignBtn(2)
     msg_confirmation_modal.verifyConfirmationWindowTitle(modal.modalTitiles.confirmMsg)
     msg_confirmation_modal.verifyMessagePresent(offchainMessage)

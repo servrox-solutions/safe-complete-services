@@ -1,6 +1,8 @@
+import type { PayMethod } from '@/features/counterfactual/PayNowPayLater'
 import { type RootState } from '@/store'
 import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { PredictedSafeProps } from '@safe-global/protocol-kit'
+import { selectChainIdAndSafeAddress } from '@/store/common'
 
 export enum PendingSafeStatus {
   AWAITING_EXECUTION = 'AWAITING_EXECUTION',
@@ -10,9 +12,13 @@ export enum PendingSafeStatus {
 
 type UndeployedSafeStatus = {
   status: PendingSafeStatus
+  type: PayMethod
   txHash?: string
   taskId?: string
   startBlock?: number
+  submittedAt?: number
+  signerAddress?: string
+  signerNonce?: number | null
 }
 
 export type UndeployedSafe = {
@@ -32,9 +38,9 @@ export const undeployedSafesSlice = createSlice({
   reducers: {
     addUndeployedSafe: (
       state,
-      action: PayloadAction<{ chainId: string; address: string; safeProps: PredictedSafeProps }>,
+      action: PayloadAction<{ chainId: string; address: string; type: PayMethod; safeProps: PredictedSafeProps }>,
     ) => {
-      const { chainId, address, safeProps } = action.payload
+      const { chainId, address, type, safeProps } = action.payload
 
       if (!state[chainId]) {
         state[chainId] = {}
@@ -44,13 +50,19 @@ export const undeployedSafesSlice = createSlice({
         props: safeProps,
         status: {
           status: PendingSafeStatus.AWAITING_EXECUTION,
+          type,
         },
       }
     },
 
+    addUndeployedSafes: (_, { payload }: PayloadAction<UndeployedSafesState>) => {
+      // We must return as we are overwriting the entire state
+      return payload
+    },
+
     updateUndeployedSafeStatus: (
       state,
-      action: PayloadAction<{ chainId: string; address: string; status: UndeployedSafeStatus }>,
+      action: PayloadAction<{ chainId: string; address: string; status: Omit<UndeployedSafeStatus, 'type'> }>,
     ) => {
       const { chainId, address, status } = action.payload
 
@@ -58,7 +70,10 @@ export const undeployedSafesSlice = createSlice({
 
       state[chainId][address] = {
         props: state[chainId][address].props,
-        status,
+        status: {
+          ...state[chainId][address].status,
+          ...status,
+        },
       }
     },
 
@@ -82,7 +97,7 @@ export const selectUndeployedSafes = (state: RootState): UndeployedSafesState =>
 }
 
 export const selectUndeployedSafe = createSelector(
-  [selectUndeployedSafes, (_, chainId: string, address: string) => [chainId, address]],
+  [selectUndeployedSafes, selectChainIdAndSafeAddress],
   (undeployedSafes, [chainId, address]): UndeployedSafe | undefined => {
     return undeployedSafes[chainId]?.[address]
   },

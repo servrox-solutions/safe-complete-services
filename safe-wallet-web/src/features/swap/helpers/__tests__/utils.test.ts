@@ -5,7 +5,10 @@ import {
   getPartiallyFilledSurplus,
   getSurplusPrice,
   isOrderPartiallyFilled,
+  isSettingTwapFallbackHandler,
+  TWAP_FALLBACK_HANDLER,
 } from '../utils'
+import type { DecodedDataResponse, TwapOrder } from '@safe-global/safe-gateway-typescript-sdk'
 import { type SwapOrder } from '@safe-global/safe-gateway-typescript-sdk'
 
 describe('Swap helpers', () => {
@@ -81,6 +84,25 @@ describe('Swap helpers', () => {
     const surplusPrice = getSurplusPrice(mockOrder)
 
     expect(executionPrice).toBe(2)
+    expect(limitPrice).toBe(2)
+    expect(surplusPrice).toBe(0)
+  })
+
+  test('twap order with unknown executed sell and buy amounts', () => {
+    const mockOrder = {
+      executedSellAmount: null,
+      executedBuyAmount: null,
+      buyToken: { decimals: 8 },
+      sellToken: { decimals: 18 },
+      sellAmount: '100000000000000000000',
+      buyAmount: '5000000000',
+    } as unknown as TwapOrder
+
+    const executionPrice = getExecutionPrice(mockOrder)
+    const limitPrice = getLimitPrice(mockOrder)
+    const surplusPrice = getSurplusPrice(mockOrder)
+
+    expect(executionPrice).toBe(0)
     expect(limitPrice).toBe(2)
     expect(surplusPrice).toBe(0)
   })
@@ -312,6 +334,97 @@ describe('Swap helpers', () => {
       const result = getPartiallyFilledSurplus(mockOrder)
 
       expect(result).toEqual(5)
+    })
+  })
+
+  describe('isSettingTwapFallbackHandler', () => {
+    it('should return true when handler is TWAP_FALLBACK_HANDLER', () => {
+      const decodedData = {
+        parameters: [
+          {
+            valueDecoded: [
+              {
+                dataDecoded: {
+                  method: 'setFallbackHandler',
+                  parameters: [{ name: 'handler', value: TWAP_FALLBACK_HANDLER }],
+                },
+              },
+            ],
+          },
+        ],
+      } as unknown as DecodedDataResponse
+      expect(isSettingTwapFallbackHandler(decodedData)).toBe(true)
+    })
+
+    it('should return false when handler is not TWAP_FALLBACK_HANDLER', () => {
+      const decodedData = {
+        parameters: [
+          {
+            valueDecoded: [
+              {
+                dataDecoded: {
+                  method: 'setFallbackHandler',
+                  parameters: [{ name: 'handler', value: '0xDifferentHandler' }],
+                },
+              },
+            ],
+          },
+        ],
+      } as unknown as DecodedDataResponse
+      expect(isSettingTwapFallbackHandler(decodedData)).toBe(false)
+    })
+
+    it('should return false when method is not setFallbackHandler', () => {
+      const decodedData = {
+        parameters: [
+          {
+            valueDecoded: [
+              {
+                dataDecoded: {
+                  method: 'differentMethod',
+                  parameters: [{ name: 'handler', value: TWAP_FALLBACK_HANDLER }],
+                },
+              },
+            ],
+          },
+        ],
+      } as unknown as DecodedDataResponse
+      expect(isSettingTwapFallbackHandler(decodedData)).toBe(false)
+    })
+
+    it('should return false when decodedData is undefined', () => {
+      expect(isSettingTwapFallbackHandler(undefined)).toBe(false)
+    })
+
+    it('should return false when parameters are missing', () => {
+      const decodedData = {} as unknown as DecodedDataResponse
+      expect(isSettingTwapFallbackHandler(decodedData)).toBe(false)
+    })
+
+    it('should return false when valueDecoded is missing', () => {
+      const decodedData = {
+        parameters: [
+          {
+            valueDecoded: null,
+          },
+        ],
+      } as unknown as DecodedDataResponse
+      expect(isSettingTwapFallbackHandler(decodedData)).toBe(false)
+    })
+
+    it('should return false when dataDecoded is missing', () => {
+      const decodedData = {
+        parameters: [
+          {
+            valueDecoded: [
+              {
+                dataDecoded: null,
+              },
+            ],
+          },
+        ],
+      } as unknown as DecodedDataResponse
+      expect(isSettingTwapFallbackHandler(decodedData)).toBe(false)
     })
   })
 })

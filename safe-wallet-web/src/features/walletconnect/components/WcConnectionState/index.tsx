@@ -5,22 +5,15 @@ import SafeAppIconCard from '@/components/safe-apps/SafeAppIconCard'
 import SafeLogo from '@/public/images/logo-no-text.svg'
 import ConnectionDots from '@/public/images/common/connection-dots.svg'
 import css from './styles.module.css'
-import { useDarkMode } from '../../../../hooks/useDarkMode'
 
 const WcConnectionState = ({ metadata, isDelete }: { metadata?: CoreTypes.Metadata; isDelete: boolean }) => {
   const name = metadata?.name || 'dApp'
   const icon = metadata?.icons[0] || ''
-  const isDarkMode = useDarkMode()
 
   return (
     <div className={css.container}>
       <div>
-        <SafeLogo
-          style={{ height: '50px', fill: isDarkMode ? '#FFF' : '#000' }}
-          alt="Safe logo"
-          width="28px"
-          height="28px"
-        />
+        <SafeLogo alt="Safe logo" width="28px" height="28px" />
 
         <SvgIcon
           component={ConnectionDots}

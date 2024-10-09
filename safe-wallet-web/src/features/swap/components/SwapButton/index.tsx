@@ -27,6 +27,7 @@ const SwapButton = ({
       {(isOk) => (
         <Track {...SWAP_EVENTS.OPEN_SWAPS} label={trackingLabel}>
           <Button
+            data-testid="swap-btn"
             variant="outlined"
             color="primary"
             size="small"
@@ -36,7 +37,7 @@ const SwapButton = ({
                 pathname: AppRoutes.swap,
                 query: {
                   ...router.query,
-                  token: tokenInfo.symbol,
+                  token: tokenInfo.address,
                   amount,
                 },
               })

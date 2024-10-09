@@ -1,13 +1,15 @@
 import type { ReactElement, ReactNode } from 'react'
-import { SvgIcon } from '@mui/material'
+import { SvgIcon, Typography } from '@mui/material'
 import GitHubIcon from '@mui/icons-material/GitHub'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import css from './styles.module.css'
 import { AppRoutes } from '@/config/routes'
 import packageJson from '../../../../package.json'
+import AppstoreButton from '../AppStoreButton'
 import ExternalLink from '../ExternalLink'
 import MUILink from '@mui/material/Link'
+import { HELP_CENTER_URL, IS_DEV, IS_OFFICIAL_HOST } from '@/config/constants'
 
 const footerPages = [
   AppRoutes.welcome.index,
@@ -43,7 +45,7 @@ const Footer = (): ReactElement | null => {
   return (
     <footer className={css.container}>
       <ul>
-        {/* {IS_OFFICIAL_HOST || IS_DEV ? (
+        {IS_OFFICIAL_HOST || IS_DEV ? (
           <>
             <li>
               <Typography variant="caption">&copy;2022–{new Date().getFullYear()} Core Contributors GmbH</Typography>
@@ -74,52 +76,16 @@ const Footer = (): ReactElement | null => {
           </>
         ) : (
           <li>{'This is an unofficial distribution of Safe{Wallet}'}</li>
-        )} */}
-
-        <li style={{ textAlign: 'center' }}>
-          <ExternalLink href="https://explorer.evm.iota.org/" style={{ color: '#0fc1b7', fontWeight: 400 }} noIcon>
-            &nbsp;IOTA
-          </ExternalLink>
-          &nbsp;and
-          <span style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all' }}>
-            <ExternalLink
-              href="https://explorer.evm.shimmer.network/"
-              style={{ color: '#00E0CA', fontWeight: 400 }}
-              noIcon
-            >
-              &nbsp;Shimmer
-            </ExternalLink>
-          </span>
-        </li>
-
-        <li>
-          <ExternalLink href="https://github.com/servrox-solutions/shimmer-safe-token-list" noIcon>
-            <SvgIcon component={GitHubIcon} inheritViewBox fontSize="inherit" sx={{ mr: 0.5 }} /> Requests & Support
-          </ExternalLink>
-        </li>
-
-        <li style={{ textAlign: 'center' }}>
-          Website operated and maintained by
-          <ExternalLink href="https://servrox.solutions/" style={{ color: '#858585', fontWeight: 400 }} noIcon>
-            &nbsp;servrox solutions&nbsp;
-          </ExternalLink>
-          and funded by
-          <span style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all' }}>
-            <ExternalLink href="https://tangle-association.ch/" style={{ color: '#2a66ff', fontWeight: 400 }} noIcon>
-              &nbsp;TEA
-            </ExternalLink>
-            .
-          </span>
-        </li>
+        )}
 
         <li>
           <ExternalLink href={`${packageJson.homepage}/releases/tag/v${packageJson.version}`} noIcon>
             <SvgIcon component={GitHubIcon} inheritViewBox fontSize="inherit" sx={{ mr: 0.5 }} /> v{packageJson.version}
           </ExternalLink>
         </li>
-        {/* <li>
+        <li>
           <AppstoreButton placement="footer" />
-        </li> */}
+        </li>
       </ul>
     </footer>
   )

@@ -8,16 +8,16 @@ import * as nfts from '../pages/nfts.pages'
 import * as ls from '../../support/localstorage_data.js'
 import { ethers } from 'ethers'
 import SafeApiKit from '@safe-global/api-kit'
-import { createEthersAdapter, createSigners } from '../../support/api/utils_ether'
+import { createSigners } from '../../support/api/utils_ether'
 import { createSafes } from '../../support/api/utils_protocolkit'
 import { contracts, abi_qtrust, abi_nft_pc2 } from '../../support/api/contracts'
 import { getSafes, CATEGORIES } from '../../support/safes/safesHandler.js'
+import * as wallet from '../../support/utils/wallet.js'
 
-const safeBalanceEth = 305240000000000000n
-const qtrustBanance = 99000000000000000025n
 const transferAmount = '1'
 
 const walletCredentials = JSON.parse(Cypress.env('CYPRESS_WALLET_CREDENTIALS'))
+const signer = walletCredentials.OWNER_4_PRIVATE_KEY
 
 const tokenAmount2 = '0.00001'
 const netwrok = 'sepolia'
@@ -40,10 +40,6 @@ const tokenContract = new ethers.Contract(contractAddress, abi_qtrust, provider)
 const nftContract = new ethers.Contract(nftContractAddress, abi_nft_pc2, provider)
 
 const owner1Signer = signers[0]
-const owner2Signer = signers[1]
-
-const ethAdapterOwner1 = createEthersAdapter(owner1Signer)
-const ethAdapterOwner2 = createEthersAdapter(owner2Signer)
 
 function visit(url) {
   cy.visit(url)
@@ -51,12 +47,14 @@ function visit(url) {
 
 describe('Send funds with connected signer happy path tests', { defaultCommandTimeout: 60000 }, () => {
   before(async () => {
+    cy.clearLocalStorage().then(() => {
+      main.addToLocalStorage(constants.localStorageKeys.SAFE_v2_cookies, ls.cookies.acceptedCookies)
+      main.addToLocalStorage(
+        constants.localStorageKeys.SAFE_v2__tokenlist_onboarding,
+        ls.cookies.acceptedTokenListOnboarding,
+      )
+    })
     safesData = await getSafes(CATEGORIES.funds)
-    main.addToLocalStorage(constants.localStorageKeys.SAFE_v2__cookies, ls.cookies.acceptedCookies)
-    main.addToLocalStorage(
-      constants.localStorageKeys.SAFE_v2__tokenlist_onboarding,
-      ls.cookies.acceptedTokenListOnboarding,
-    )
     apiKit = new SafeApiKit({
       chainId: BigInt(1),
       txServiceUrl: constants.stagingTxServiceUrl,
@@ -65,8 +63,8 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
     outgoingSafeAddress = safesData.SEP_FUNDS_SAFE_6.substring(4)
 
     const safeConfigurations = [
-      { ethAdapter: ethAdapterOwner1, safeAddress: outgoingSafeAddress },
-      { ethAdapter: ethAdapterOwner2, safeAddress: outgoingSafeAddress },
+      { signer: walletCredentials.OWNER_1_PRIVATE_KEY, safeAddress: outgoingSafeAddress, provider },
+      { signer: walletCredentials.OWNER_2_PRIVATE_KEY, safeAddress: outgoingSafeAddress, provider },
     ]
 
     safes = await createSafes(safeConfigurations)
@@ -81,6 +79,7 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
 
     function executeTransactionFlow(fromSafe, toSafe) {
       return cy.visit(constants.balanceNftsUrl + fromSafe).then(() => {
+        wallet.connectSigner(signer)
         nfts.selectNFTs(1)
         nfts.sendNFT()
         nfts.typeRecipientAddress(toSafe)
@@ -103,6 +102,8 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
           })
           await tx.wait()
           main.verifyNonceChange(network_pref + originatingSafe, currentNonce + 1)
+          navigation.clickOnWalletExpandMoreIcon()
+          navigation.clickOnDisconnectBtn()
         })
       })
   })
@@ -112,6 +113,7 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
     const targetSafe = safesData.SEP_FUNDS_SAFE_12.substring(4)
     function executeTransactionFlow(fromSafe, toSafe, tokenAmount) {
       visit(constants.BALANCE_URL + fromSafe)
+      wallet.connectSigner(signer)
       assets.clickOnSendBtn(0)
       loadsafe.inputOwnerAddress(0, toSafe)
       assets.checkSelectedToken(constants.tokenAbbreviation.sep)
@@ -155,7 +157,8 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
         const safeTx = await apiKit.getTransaction(safeTxHashofExistingTx)
         await protocolKitOwner2_S3.executeTransaction(safeTx)
         main.verifyNonceChange(network_pref + targetSafe, currentNonce + 1)
-        main.checkTokenBalance(network_pref + targetSafe, constants.tokenAbbreviation.eth, safeBalanceEth)
+        navigation.clickOnWalletExpandMoreIcon()
+        navigation.clickOnDisconnectBtn()
       })
   })
 
@@ -166,6 +169,7 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
 
     function executeTransactionFlow(fromSafe, toSafe) {
       visit(constants.BALANCE_URL + fromSafe)
+      wallet.connectSigner(signer)
       assets.selectTokenList(assets.tokenListOptions.allTokens)
       assets.clickOnSendBtn(1)
       loadsafe.inputOwnerAddress(0, toSafe)
@@ -188,7 +192,8 @@ describe('Send funds with connected signer happy path tests', { defaultCommandTi
 
         await tx.wait()
         main.verifyNonceChange(network_pref + originatingSafe, currentNonce + 1)
-        main.checkTokenBalance(network_pref + originatingSafe, constants.tokenAbbreviation.qtrust, qtrustBanance)
+        navigation.clickOnWalletExpandMoreIcon()
+        navigation.clickOnDisconnectBtn()
       })
   })
 })

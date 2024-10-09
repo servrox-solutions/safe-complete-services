@@ -4,12 +4,16 @@ import * as assets from '../pages/assets.pages'
 import * as tx from '../pages/transactions.page'
 import { ethers } from 'ethers'
 import SafeApiKit from '@safe-global/api-kit'
-import { createEthersAdapter, createSigners } from '../../support/api/utils_ether'
+import { createSigners } from '../../support/api/utils_ether'
 import { createSafes } from '../../support/api/utils_protocolkit'
 import { getSafes, CATEGORIES } from '../../support/safes/safesHandler.js'
+import * as wallet from '../../support/utils/wallet.js'
+import * as ls from '../../support/localstorage_data.js'
+import * as navigation from '../pages/navigation.page.js'
 
 const walletCredentials = JSON.parse(Cypress.env('CYPRESS_WALLET_CREDENTIALS'))
 const receiver = walletCredentials.OWNER_2_WALLET_ADDRESS
+const signer = walletCredentials.OWNER_4_PRIVATE_KEY
 
 const tokenAmount = '0.0001'
 const netwrok = 'sepolia'
@@ -35,17 +39,13 @@ const signers = createSigners(privateKeys, provider)
 const owner1Signer = signers[0]
 const owner2Signer = signers[1]
 
-const ethAdapterOwner1 = createEthersAdapter(owner1Signer)
-const ethAdapterOwner2 = createEthersAdapter(owner2Signer)
-
 function visit(url) {
   cy.visit(url)
-  cy.clearLocalStorage()
-  main.acceptCookies()
 }
 
 function executeTransactionFlow(fromSafe) {
   visit(constants.transactionQueueUrl + fromSafe)
+  wallet.connectSigner(signer)
   assets.clickOnConfirmBtn(0)
   tx.executeFlow_1()
   cy.wait(5000)
@@ -53,6 +53,14 @@ function executeTransactionFlow(fromSafe) {
 
 describe('Send funds from queue happy path tests 1', () => {
   before(async () => {
+    cy.clearLocalStorage().then(() => {
+      main.addToLocalStorage(constants.localStorageKeys.SAFE_v2_cookies, ls.cookies.acceptedCookies)
+      main.addToLocalStorage(
+        constants.localStorageKeys.SAFE_v2__tokenlist_onboarding,
+        ls.cookies.acceptedTokenListOnboarding,
+      )
+    })
+
     safesData = await getSafes(CATEGORIES.funds)
     apiKit = new SafeApiKit({
       chainId: BigInt(1),
@@ -64,10 +72,10 @@ describe('Send funds from queue happy path tests 1', () => {
     existingSafeAddress3 = safesData.SEP_FUNDS_SAFE_5.substring(4)
 
     const safeConfigurations = [
-      { ethAdapter: ethAdapterOwner1, safeAddress: existingSafeAddress1 },
-      { ethAdapter: ethAdapterOwner1, safeAddress: existingSafeAddress2 },
-      { ethAdapter: ethAdapterOwner1, safeAddress: existingSafeAddress3 },
-      { ethAdapter: ethAdapterOwner2, safeAddress: existingSafeAddress3 },
+      { signer: privateKeys[0], safeAddress: existingSafeAddress1, provider },
+      { signer: privateKeys[0], safeAddress: existingSafeAddress2, provider },
+      { signer: privateKeys[0], safeAddress: existingSafeAddress3, provider },
+      { signer: privateKeys[1], safeAddress: existingSafeAddress3, provider },
     ]
 
     safes = await createSafes(safeConfigurations)
@@ -107,12 +115,15 @@ describe('Send funds from queue happy path tests 1', () => {
         executeTransactionFlow(safeAddress)
         cy.wait(5000)
         main.verifyNonceChange(network_pref + safeAddress, currentNonce + 1)
+        navigation.clickOnWalletExpandMoreIcon()
+        navigation.clickOnDisconnectBtn()
       })
   })
 
   it.skip('Verify confirmation and execution of native token queued tx by second signer with relayer', () => {
     function executeTransactionFlow(fromSafe) {
       visit(constants.transactionQueueUrl + fromSafe)
+      wallet.connectSigner(signer)
       assets.clickOnConfirmBtn(0)
       tx.executeFlow_2()
       cy.wait(5000)
@@ -148,9 +159,10 @@ describe('Send funds from queue happy path tests 1', () => {
       })
   })
 
-  it('Verify 1 signer can execute a tx confirmed by 2 signers', () => {
+  it('Verify 1 signer can execute a tx confirmed by 2 signers', { defaultCommandTimeout: 300000 }, () => {
     function executeTransaction(fromSafe) {
       visit(constants.transactionQueueUrl + fromSafe)
+      wallet.connectSigner(signer)
       assets.clickOnExecuteBtn(0)
       tx.executeFlow_3()
       cy.wait(5000)
@@ -189,6 +201,8 @@ describe('Send funds from queue happy path tests 1', () => {
         executeTransaction(safeAddress)
         cy.wait(5000)
         main.verifyNonceChange(network_pref + safeAddress, currentNonce + 1)
+        navigation.clickOnWalletExpandMoreIcon()
+        navigation.clickOnDisconnectBtn()
       })
   })
 })

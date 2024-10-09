@@ -23,7 +23,7 @@ import useSafeNotifications from '@/hooks/useSafeNotifications'
 import useTxPendingStatuses from '@/hooks/useTxPendingStatuses'
 import { useInitSession } from '@/hooks/useInitSession'
 import Notifications from '@/components/common/Notifications'
-import CookieBanner from '@/components/common/CookieBanner'
+import CookieAndTermBanner from 'src/components/common/CookieAndTermBanner'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { cgwDebugStorage } from '@/components/sidebar/DebugToggle'
 import { useTxTracking } from '@/hooks/useTxTracking'
@@ -42,8 +42,10 @@ import { useNotificationTracking } from '@/components/settings/PushNotifications
 import Recovery from '@/features/recovery/components/Recovery'
 import WalletProvider from '@/components/common/WalletProvider'
 import CounterfactualHooks from '@/features/counterfactual/CounterfactualHooks'
+import PkModulePopup from '@/services/private-key-module/PkModulePopup'
+import GeoblockingProvider from '@/components/common/GeoblockingProvider'
 
-const GATEWAY_URL = IS_PRODUCTION || cgwDebugStorage.get() ? GATEWAY_URL_PRODUCTION : GATEWAY_URL_STAGING
+export const GATEWAY_URL = IS_PRODUCTION || cgwDebugStorage.get() ? GATEWAY_URL_PRODUCTION : GATEWAY_URL_STAGING
 
 const reduxStore = makeStore()
 
@@ -83,7 +85,9 @@ export const AppProviders = ({ children }: { children: ReactNode | ReactNode[] }
         <ThemeProvider theme={safeTheme}>
           <SentryErrorBoundary showDialog fallback={ErrorBoundary}>
             <WalletProvider>
-              <TxModalProvider>{children}</TxModalProvider>
+              <GeoblockingProvider>
+                <TxModalProvider>{children}</TxModalProvider>
+              </GeoblockingProvider>
             </WalletProvider>
           </SentryErrorBoundary>
         </ThemeProvider>
@@ -121,13 +125,15 @@ const WebCoreApp = ({
             <Component {...pageProps} key={safeKey} />
           </PageLayout>
 
-          <CookieBanner />
+          <CookieAndTermBanner />
 
           <Notifications />
 
           <Recovery />
 
           <CounterfactualHooks />
+
+          <PkModulePopup />
         </AppProviders>
       </CacheProvider>
     </Provider>

@@ -9,11 +9,15 @@ import { act, renderHook } from '@/tests/test-utils'
 import { TxModalContext } from '@/components/tx-flow'
 import useSafeWalletProvider, { _useTxFlowApi } from './useSafeWalletProvider'
 import { SafeWalletProvider } from '.'
+import type { RootState } from '@/store'
 import { makeStore } from '@/store'
 import * as messages from '@/utils/safe-messages'
 import { faker } from '@faker-js/faker'
 import { Interface } from 'ethers'
 import { getCreateCallDeployment } from '@safe-global/safe-deployments'
+import { useCurrentChain } from '@/hooks/useChains'
+import { chainBuilder } from '@/tests/builders/chains'
+import { FEATURES } from '@/utils/chains'
 
 const appInfo = {
   id: 1,
@@ -30,9 +34,23 @@ jest.mock('./notifications', () => {
   }
 })
 
+jest.mock('@/hooks/useChains', () => ({
+  __esModule: true,
+  ...jest.requireActual('@/hooks/useChains'),
+  useCurrentChain: jest.fn(),
+}))
+
 describe('useSafeWalletProvider', () => {
+  const mockUseCurrentChain = useCurrentChain as jest.MockedFunction<typeof useCurrentChain>
+
   beforeEach(() => {
     jest.clearAllMocks()
+
+    mockUseCurrentChain.mockReturnValue(
+      chainBuilder()
+        .with({ chainId: '1', features: [FEATURES.SAFE_141 as any] })
+        .build(),
+    )
   })
 
   describe('useSafeWalletProvider', () => {
@@ -111,10 +129,19 @@ describe('useSafeWalletProvider', () => {
 
       const mockSetTxFlow = jest.fn()
 
+      const testStore = makeStore({
+        settings: {
+          signing: {
+            onChainSigning: false,
+            blindSigning: false,
+          },
+        },
+      } as Partial<RootState>)
+
       const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         // TODO: Improve render/renderHook to allow custom wrappers within the "defaults"
         wrapper: ({ children }) => (
-          <Provider store={makeStore({ settings: { signing: { useOnChainSigning: false } } })}>
+          <Provider store={testStore}>
             <TxModalContext.Provider value={{ setTxFlow: mockSetTxFlow } as any}>{children}</TxModalContext.Provider>
           </Provider>
         ),
@@ -299,8 +326,7 @@ describe('useSafeWalletProvider', () => {
         push: mockPush,
       } as unknown as router.NextRouter)
 
-      // @ts-expect-error - auto accept prompt
-      jest.spyOn(window, 'prompt').mockReturnValue(true)
+      jest.spyOn(window, 'confirm').mockReturnValue(true)
 
       const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         initialReduxState: {

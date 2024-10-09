@@ -1,8 +1,10 @@
 import type { EthersError } from '@/utils/ethers-utils'
 import { type ConnectedWallet } from '@/hooks/wallets/useOnboard'
-import { getWeb3ReadOnly, isSmartContract } from '@/hooks/wallets/web3'
+import { getWeb3ReadOnly } from '@/hooks/wallets/web3'
 import { WALLET_KEYS } from '@/hooks/wallets/consts'
+import { EMPTY_DATA } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import memoize from 'lodash/memoize'
+import { PRIVATE_KEY_MODULE_LABEL } from '@/services/private-key-module'
 
 const WALLETCONNECT = 'WalletConnect'
 
@@ -32,21 +34,29 @@ export const isHardwareWallet = (wallet: ConnectedWallet): boolean => {
   )
 }
 
+export const isSmartContract = async (address: string): Promise<boolean> => {
+  const provider = getWeb3ReadOnly()
+
+  if (!provider) {
+    throw new Error('Provider not found')
+  }
+
+  const code = await provider.getCode(address)
+
+  return code !== EMPTY_DATA
+}
+
 export const isSmartContractWallet = memoize(
-  async (_chainId: string, address: string) => {
-    const provider = getWeb3ReadOnly()
-
-    if (!provider) {
-      throw new Error('Provider not found')
-    }
-
-    return isSmartContract(provider, address)
+  async (_chainId: string, address: string): Promise<boolean> => {
+    return isSmartContract(address)
   },
   (chainId, address) => chainId + address,
 )
 
 /* Check if the wallet is unlocked. */
 export const isWalletUnlocked = async (walletName: string): Promise<boolean | undefined> => {
+  if (walletName === PRIVATE_KEY_MODULE_LABEL) return true
+
   const METAMASK_LIKE = ['MetaMask', 'Rabby Wallet', 'Zerion']
 
   // Only MetaMask exposes a method to check if the wallet is unlocked

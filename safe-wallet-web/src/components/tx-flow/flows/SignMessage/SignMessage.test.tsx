@@ -1,3 +1,4 @@
+import { act } from 'react'
 import { extendedSafeInfoBuilder } from '@/tests/builders/safe'
 import { hexlify, zeroPadValue, toUtf8Bytes } from 'ethers'
 import type { SafeInfo, SafeMessage } from '@safe-global/safe-gateway-typescript-sdk'
@@ -11,9 +12,8 @@ import * as useSafeInfoHook from '@/hooks/useSafeInfo'
 import * as useChainsHook from '@/hooks/useChains'
 import * as sender from '@/services/safe-messages/safeMsgSender'
 import * as onboard from '@/hooks/wallets/useOnboard'
-import * as sdk from '@/services/tx/tx-sender/sdk'
 import * as useSafeMessage from '@/hooks/messages/useSafeMessage'
-import { render, act, fireEvent, waitFor } from '@/tests/test-utils'
+import { render, fireEvent, waitFor } from '@/tests/test-utils'
 import type { ConnectedWallet } from '@/hooks/wallets/useOnboard'
 import type { EIP1193Provider, WalletState, AppState, OnboardAPI } from '@web3-onboard/core'
 import { generateSafeMessageHash } from '@/utils/safe-messages'
@@ -102,8 +102,6 @@ describe('SignMessage', () => {
     }))
 
     jest.spyOn(useIsWrongChainHook, 'default').mockImplementation(() => false)
-
-    jest.spyOn(sdk, 'assertWalletChain').mockImplementation(jest.fn())
   })
 
   describe('EIP-191 messages', () => {
@@ -243,7 +241,7 @@ describe('SignMessage', () => {
 
     const button = getByText('Sign')
 
-    await act(() => {
+    act(() => {
       fireEvent.click(button)
     })
 
@@ -257,9 +255,11 @@ describe('SignMessage', () => {
     )
 
     // Immediately refetches message and displays confirmation
-    expect(baseElement).toHaveTextContent('0x0000...0002')
-    expect(baseElement).toHaveTextContent('1 of 2')
-    expect(baseElement).toHaveTextContent('Confirmation #2')
+    await waitFor(() => {
+      expect(baseElement).toHaveTextContent('0x0000...0002')
+      expect(baseElement).toHaveTextContent('1 of 2')
+      expect(baseElement).toHaveTextContent('Confirmation #2')
+    })
   })
 
   it('confirms the message if already proposed', async () => {
@@ -292,7 +292,7 @@ describe('SignMessage', () => {
       confirmationsSubmitted: 1,
     } as unknown as SafeMessage
 
-    jest.spyOn(useSafeMessage, 'default').mockReturnValueOnce([msg, jest.fn])
+    jest.spyOn(useSafeMessage, 'default').mockReturnValueOnce([msg, jest.fn, undefined])
 
     const { getByText, rerender } = render(
       <SignMessage logoUri="www.fake.com/test.png" name="Test App" message={messageText} requestId="123" />,
@@ -326,11 +326,11 @@ describe('SignMessage', () => {
 
     ;(getSafeMessage as jest.Mock).mockResolvedValue(newMsg)
 
-    await act(() => {
+    act(() => {
       fireEvent.click(button)
     })
 
-    jest.spyOn(useSafeMessage, 'default').mockReturnValue([newMsg, jest.fn])
+    jest.spyOn(useSafeMessage, 'default').mockReturnValue([newMsg, jest.fn, undefined])
 
     rerender(<SignMessage logoUri="www.fake.com/test.png" name="Test App" message={messageText} requestId="123" />)
 
@@ -350,7 +350,7 @@ describe('SignMessage', () => {
   it('displays an error if no wallet is connected', () => {
     jest.spyOn(useWalletHook, 'default').mockReturnValue(null)
     jest.spyOn(useIsSafeOwnerHook, 'default').mockImplementation(() => false)
-    jest.spyOn(useSafeMessage, 'default').mockImplementation(() => [undefined, jest.fn()])
+    jest.spyOn(useSafeMessage, 'default').mockImplementation(() => [undefined, jest.fn(), undefined])
 
     const { getByText } = render(
       <SignMessage
@@ -367,14 +367,14 @@ describe('SignMessage', () => {
     expect(getByText('Sign')).toBeDisabled()
   })
 
-  it('displays an error if connected to the wrong chain', () => {
+  it('displays a network switch warning if connected to the wrong chain', () => {
     jest.spyOn(onboard, 'default').mockReturnValue(mockOnboard)
     jest.spyOn(useIsSafeOwnerHook, 'default').mockImplementation(() => true)
     jest.spyOn(useIsWrongChainHook, 'default').mockImplementation(() => true)
     jest.spyOn(useChainsHook, 'useCurrentChain').mockReturnValue(chainBuilder().build())
-    jest.spyOn(useSafeMessage, 'default').mockImplementation(() => [undefined, jest.fn()])
+    jest.spyOn(useSafeMessage, 'default').mockImplementation(() => [undefined, jest.fn(), undefined])
 
-    const { getByText } = render(
+    const { getByText, queryByText } = render(
       <SignMessage
         logoUri="www.fake.com/test.png"
         name="Test App"
@@ -384,9 +384,8 @@ describe('SignMessage', () => {
       />,
     )
 
-    expect(getByText('Wallet network switch')).toBeInTheDocument()
-
-    expect(getByText('Sign')).not.toBeDisabled()
+    expect(getByText('Change your wallet network')).toBeInTheDocument()
+    expect(queryByText('Sign')).toBeDisabled()
   })
 
   it('displays an error if not an owner', () => {
@@ -398,7 +397,7 @@ describe('SignMessage', () => {
         } as ConnectedWallet),
     )
     jest.spyOn(useIsSafeOwnerHook, 'default').mockImplementation(() => false)
-    jest.spyOn(useSafeMessage, 'default').mockImplementation(() => [undefined, jest.fn()])
+    jest.spyOn(useSafeMessage, 'default').mockImplementation(() => [undefined, jest.fn(), undefined])
 
     const { getByText } = render(
       <SignMessage
@@ -451,7 +450,7 @@ describe('SignMessage', () => {
       confirmationsSubmitted: 1,
     } as unknown as SafeMessage
 
-    jest.spyOn(useSafeMessage, 'default').mockReturnValue([msg, jest.fn])
+    jest.spyOn(useSafeMessage, 'default').mockReturnValue([msg, jest.fn, undefined])
 
     const { getByText } = render(
       <SignMessage logoUri="www.fake.com/test.png" name="Test App" message={messageText} requestId="123" />,
@@ -473,7 +472,7 @@ describe('SignMessage', () => {
         } as ConnectedWallet),
     )
 
-    jest.spyOn(useSafeMessage, 'default').mockReturnValue([undefined, jest.fn()])
+    jest.spyOn(useSafeMessage, 'default').mockReturnValue([undefined, jest.fn(), undefined])
 
     jest.spyOn(useIsSafeOwnerHook, 'default').mockImplementation(() => true)
     ;(getSafeMessage as jest.Mock).mockRejectedValue(new Error('SafeMessage not found'))
@@ -495,7 +494,7 @@ describe('SignMessage', () => {
     const button = getByText('Sign')
     expect(button).not.toBeDisabled()
 
-    await act(() => {
+    act(() => {
       fireEvent.click(button)
     })
 
@@ -541,7 +540,7 @@ describe('SignMessage', () => {
     } as unknown as SafeMessage
     ;(getSafeMessage as jest.Mock).mockResolvedValue(msg)
 
-    jest.spyOn(useSafeMessage, 'default').mockReturnValue([msg, jest.fn()])
+    jest.spyOn(useSafeMessage, 'default').mockReturnValue([msg, jest.fn(), undefined])
 
     const { getByText } = render(
       <SignMessage logoUri="www.fake.com/test.png" name="Test App" message={messageText} requestId="123" />,
@@ -559,7 +558,7 @@ describe('SignMessage', () => {
 
     expect(button).toBeEnabled()
 
-    await act(() => {
+    act(() => {
       fireEvent.click(button)
     })
 
@@ -610,7 +609,7 @@ describe('SignMessage', () => {
       preparedSignature: '0x678',
     } as unknown as SafeMessage
 
-    jest.spyOn(useSafeMessage, 'default').mockReturnValue([msg, jest.fn()])
+    jest.spyOn(useSafeMessage, 'default').mockReturnValue([msg, jest.fn(), undefined])
     ;(getSafeMessage as jest.Mock).mockResolvedValue(msg)
 
     const { getByText } = render(

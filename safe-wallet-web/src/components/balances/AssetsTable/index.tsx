@@ -1,8 +1,6 @@
 import CheckBalance from '@/features/counterfactual/CheckBalance'
-import { useHasFeature } from '@/hooks/useChains'
-import { FEATURES } from '@/utils/chains'
 import { type ReactElement } from 'react'
-import { Tooltip, Typography, SvgIcon, IconButton, Box, Checkbox, Skeleton } from '@mui/material'
+import { Box, IconButton, Checkbox, Skeleton, SvgIcon, Tooltip, Typography } from '@mui/material'
 import type { TokenInfo } from '@safe-global/safe-gateway-typescript-sdk'
 import { TokenType } from '@safe-global/safe-gateway-typescript-sdk'
 import css from './styles.module.css'
@@ -20,9 +18,12 @@ import useBalances from '@/hooks/useBalances'
 import { useHideAssets, useVisibleAssets } from './useHideAssets'
 import AddFundsCTA from '@/components/common/AddFunds'
 import SwapButton from '@/features/swap/components/SwapButton'
-import useIsCounterfactualSafe from '@/features/counterfactual/hooks/useIsCounterfactualSafe'
 import { SWAP_LABELS } from '@/services/analytics/events/swaps'
 import SendButton from './SendButton'
+import useIsSwapFeatureEnabled from '@/features/swap/hooks/useIsSwapFeatureEnabled'
+import useIsStakingFeatureEnabled from '@/features/stake/hooks/useIsSwapFeatureEnabled'
+import { STAKE_LABELS } from '@/services/analytics/events/stake'
+import StakeButton from '@/features/stake/components/StakeButton'
 
 const skeletonCells: EnhancedTableProps['rows'][0]['cells'] = {
   asset: {
@@ -98,8 +99,8 @@ const AssetsTable = ({
   setShowHiddenAssets: (hidden: boolean) => void
 }): ReactElement => {
   const { balances, loading } = useBalances()
-  const isCounterfactualSafe = useIsCounterfactualSafe()
-  const isSwapFeatureEnabled = useHasFeature(FEATURES.NATIVE_SWAPS) && !isCounterfactualSafe
+  const isSwapFeatureEnabled = useIsSwapFeatureEnabled()
+  const isStakingFeatureEnabled = useIsStakingFeatureEnabled()
 
   const { isAssetSelected, toggleAsset, hidingAsset, hideAsset, cancel, deselectAll, saveChanges } = useHideAssets(() =>
     setShowHiddenAssets(false),
@@ -132,6 +133,10 @@ const AssetsTable = ({
                   <TokenIcon logoUri={item.tokenInfo.logoUri} tokenSymbol={item.tokenInfo.symbol} />
 
                   <Typography>{item.tokenInfo.name}</Typography>
+
+                  {isStakingFeatureEnabled && item.tokenInfo.type === TokenType.NATIVE_TOKEN && (
+                    <StakeButton tokenInfo={item.tokenInfo} trackingLabel={STAKE_LABELS.asset} />
+                  )}
 
                   {!isNative && <TokenExplorerLink address={item.tokenInfo.address} />}
                 </div>
@@ -167,7 +172,7 @@ const AssetsTable = ({
                           inheritViewBox
                           color="error"
                           fontSize="small"
-                          sx={{ verticalAlign: 'middle', marginLeft: 0.5 }}
+                          sx={{ verticalAlign: 'middle', ml: 0.5, mr: [0, '-20px'] }}
                         />
                       </span>
                     </Tooltip>

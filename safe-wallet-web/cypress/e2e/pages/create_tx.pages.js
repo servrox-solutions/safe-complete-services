@@ -1,22 +1,21 @@
 import * as constants from '../../support/constants'
 import * as main from '../pages/main.page'
+import * as wallet from '../pages/create_wallet.pages'
+import * as modal from '../pages/modals.page'
 
 export const delegateCallWarning = '[data-testid="delegate-call-warning"]'
 export const policyChangeWarning = '[data-testid="threshold-warning"]'
 const newTransactionBtnStr = 'New transaction'
 const recepientInput = 'input[name="recipient"]'
-const sendTokensBtnStr = 'Send tokens'
 const tokenAddressInput = 'input[name="tokenAddress"]'
 const amountInput = 'input[name="amount"]'
 const nonceInput = 'input[name="nonce"]'
-const nonceTxValue = '[data-testid="nonce"]'
 const gasLimitInput = '[name="gasLimit"]'
 const rotateLeftIcon = '[data-testid="RotateLeftIcon"]'
 export const transactionItem = '[data-testid="transaction-item"]'
 export const connectedWalletExecMethod = '[data-testid="connected-wallet-execution-method"]'
 const addToBatchBtn = '[data-track="batching: Add to batch"]'
 const accordionDetails = '[data-testid="accordion-details"]'
-const accordionMessageDetails = '[data-testid="accordion-msg-details"]'
 const copyIcon = '[data-testid="copy-btn-icon"]'
 const transactionSideList = '[data-testid="transaction-actions-list"]'
 const confirmationVisibilityBtn = '[data-testid="confirmation-visibility-btn"]'
@@ -41,6 +40,8 @@ const filterApplyBtn = '[data-testid="apply-btn"]'
 const filterClearBtn = '[data-testid="clear-btn"]'
 const addressItem = '[data-testid="address-item"]'
 const radioSelector = 'div[role="radiogroup"]'
+const rejectTxBtn = '[data-testid="reject-btn"]'
+const deleteTxModalBtn = '[data-testid="delete-tx-btn"]'
 
 const viewTransactionBtn = 'View transaction'
 const transactionDetailsTitle = 'Transaction details'
@@ -50,7 +51,7 @@ const transactionsPerHrStr = 'free transactions left this hour'
 
 const maxAmountBtnStr = 'Max'
 const nextBtnStr = 'Next'
-const nativeTokenTransferStr = 'Native token transfer'
+const nativeTokenTransferStr = 'ETH'
 const yesStr = 'Yes, '
 const estimatedFeeStr = 'Estimated fee'
 const executeStr = 'Execute'
@@ -58,15 +59,48 @@ const editBtnStr = 'Edit'
 const executionParamsStr = 'Execution parameters'
 const noLaterStr = 'No, later'
 const signBtnStr = 'Sign'
+const confirmBtnStr = 'Confirm'
 const expandAllBtnStr = 'Expand all'
 const collapseAllBtnStr = 'Collapse all'
 export const messageNestedStr = `"nestedString": "Test message 3 off-chain"`
 const noTxFoundStr = (type) => `0 ${type} transactions found`
+const deleteFromQueueStr = 'Delete from the queue'
+const bulkExecuteBtn = (tx) => `Bulk execute ${tx} transactions`
+const bulkConfirmationText = (tx) =>
+  `This transaction batches a total of ${tx} transactions from your queue into a single Ethereum transaction`
+
+const disabledBultExecuteBtnTooltip =
+  'Batch execution is only available for transactions that have been fully signed and are strictly sequential in Safe Account nonce'
+const enabledBulkExecuteBtnTooltip = 'All highlighted transactions will be included in the batch execution'
+
+const bulkExecuteBtnStr = 'Bulk execute'
+
+const batchModalTitle = 'Batch'
+const bulkTxStr = 'Bulk transactions'
 
 export const filterTypes = {
   incoming: 'Incoming',
   outgoing: 'Outgoing',
   module: 'Module-based',
+}
+
+function clickOnRejectBtn() {
+  cy.get(rejectTxBtn).click()
+}
+
+export function verifyBulkExecuteBtnIsEnabled(txs) {
+  return cy.get('button').contains(bulkExecuteBtn(txs)).should('be.enabled')
+}
+
+export function verifyEnabledBulkExecuteBtnTooltip() {
+  cy.get('button').contains(bulkExecuteBtnStr).trigger('mouseover', { force: true })
+  cy.contains(enabledBulkExecuteBtnTooltip).should('exist')
+}
+
+export function deleteTx() {
+  clickOnRejectBtn()
+  cy.get(wallet.choiceBtn).contains(deleteFromQueueStr).click()
+  cy.get(deleteTxModalBtn).click()
 }
 
 export function setTxType(type) {
@@ -87,11 +121,17 @@ export function clickOnApplyBtn() {
   cy.get(filterApplyBtn).click()
 }
 
+export function checkApplyBtnEnabled() {
+  cy.get(filterApplyBtn).should('not.be', 'disabled')
+}
+
 export function clickOnClearBtn() {
   cy.get(filterClearBtn).click()
 }
 
 export function fillFilterForm({ address, startDate, endDate, amount, token, nonce, recipient } = {}) {
+  checkApplyBtnEnabled()
+  cy.wait(2000)
   const inputMap = {
     address: { selector: addressItem, findInput: true },
     startDate: { selector: filterStartDateInput, findInput: true },
@@ -106,7 +146,9 @@ export function fillFilterForm({ address, startDate, endDate, amount, token, non
     if (value !== undefined) {
       const { selector, findInput } = inputMap[key]
       const element = findInput ? cy.get(selector).find('input') : cy.get(selector)
-      element.should('be.enabled').clear().type(value, { force: true })
+      element.then(($el) => {
+        cy.wrap($el).invoke('removeAttr', 'readonly').clear().type(value, { force: true })
+      })
     }
   })
 }
@@ -250,6 +292,10 @@ export function collapseAdvancedDetails() {
 export function expandAllActions(actions) {
   cy.get(expandAllBtn).click()
   main.checkTextsExistWithinElement(accordionDetails, actions)
+}
+
+export function clickOnExpandAllActionsBtn() {
+  cy.get(expandAllBtn).click()
 }
 
 export function collapseAllActions(data) {
@@ -439,7 +485,6 @@ export function openExecutionParamsModal() {
 
 export function verifyAndSubmitExecutionParams() {
   cy.contains(executionParamsStr).parents('form').as('Paramsform')
-
   const arrayNames = ['Wallet nonce', 'Max priority fee (Gwei)', 'Max fee (Gwei)', 'Gas limit']
   arrayNames.forEach((element) => {
     cy.get('@Paramsform').find('label').contains(`${element}`).next().find('input').should('not.be.disabled')
@@ -458,6 +503,10 @@ export function clickOnNoLaterOption() {
 
 export function clickOnSignTransactionBtn() {
   cy.get('button').contains(signBtnStr).click()
+}
+
+export function clickOnConfirmTransactionBtn() {
+  cy.get('button').contains(confirmBtnStr).click()
 }
 
 export function waitForProposeRequest() {
@@ -517,4 +566,36 @@ export function verifyTxDestinationAddress(receivedAddress) {
 
 export function verifyReplacedSigner(newSignerName) {
   cy.get(replacementNewSigner).should('exist').contains(newSignerName)
+}
+
+function verifyBulkActions(actions) {
+  actions.forEach((action) => {
+    cy.contains(action).should('exist')
+  })
+}
+
+export function verifyBulkConfirmationScreen(tx, actions) {
+  cy.contains(bulkConfirmationText(tx))
+  verifyBulkActions(actions)
+  cy.get(modal.modalHeader).within(() => {
+    cy.contains(batchModalTitle).should('exist')
+    cy.get('svg').should('exist')
+  })
+}
+
+export function verifyBulkTxHistoryBlock(tx, actions) {
+  cy.contains(bulkTxStr)
+    .parent('div')
+    .parent()
+    .eq(0)
+    .within(() => {
+      cy.contains(tx)
+      verifyBulkActions(actions)
+    })
+}
+
+export function verifyBulkExecuteBtnIsDisabled() {
+  cy.get('button').contains(bulkExecuteBtnStr).should('be.disabled')
+  cy.get('button').contains(bulkExecuteBtnStr).trigger('mouseover', { force: true })
+  cy.contains(disabledBultExecuteBtnTooltip).should('exist')
 }

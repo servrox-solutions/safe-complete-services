@@ -4,7 +4,6 @@ import type {
   MultisigExecutionDetails,
   MultisigExecutionInfo,
   SafeAppData,
-  SafeInfo,
   Transaction,
   TransactionDetails,
   TransactionListPage,
@@ -34,6 +33,7 @@ import { toBeHex, AbiCoder } from 'ethers'
 import { type BaseTransaction } from '@safe-global/safe-apps-sdk'
 import { id } from 'ethers'
 import { isEmptyHexData } from '@/utils/hex'
+import { getOriginPath } from './url'
 
 export const makeTxFromDetails = (txDetails: TransactionDetails): Transaction => {
   const getMissingSigners = ({
@@ -86,6 +86,7 @@ export const makeTxFromDetails = (txDetails: TransactionDetails): Transaction =>
       txInfo: txDetails.txInfo,
       executionInfo,
       safeAppInfo: txDetails?.safeAppInfo,
+      txHash: txDetails?.txHash || null,
     },
     conflictType: ConflictType.NONE,
   }
@@ -93,9 +94,9 @@ export const makeTxFromDetails = (txDetails: TransactionDetails): Transaction =>
 
 const getSignatures = (confirmations: Record<string, string>) => {
   return Object.entries(confirmations)
-    .filter(([_, signature]) => Boolean(signature))
+    .filter(([, signature]) => Boolean(signature))
     .sort(([signerA], [signerB]) => signerA.toLowerCase().localeCompare(signerB.toLowerCase()))
-    .reduce((prev, [_, signature]) => {
+    .reduce((prev, [, signature]) => {
       return prev + signature.slice(2)
     }, '0x')
 }
@@ -115,6 +116,7 @@ export const getMultiSendTxs = async (
       const args = extractTxInfo(tx, safeAddress)
       const sigs = getSignatures(args.signatures)
 
+      // @ts-ignore
       const data = readOnlySafeContract.encode('execTransaction', [
         args.txParams.to,
         args.txParams.value,
@@ -136,14 +138,6 @@ export const getMultiSendTxs = async (
       }
     })
     .filter(Boolean) as MetaTransactionData[]
-}
-
-export const getTxsWithDetails = (txs: Transaction[], chainId: string) => {
-  return Promise.all(
-    txs.map(async (tx) => {
-      return await getTransactionDetails(chainId, tx.transaction.id)
-    }),
-  )
 }
 
 export const getTxOptions = (params: AdvancedParameters, currentChain: ChainInfo | undefined): TransactionOptions => {
@@ -192,7 +186,7 @@ export const getTxOrigin = (app?: Partial<SafeAppData>): string | undefined => {
   try {
     // Must include empty string to avoid including the length of `undefined`
     const maxUrlLength = MAX_ORIGIN_LENGTH - JSON.stringify({ url: '', name: '' }).length
-    const trimmedUrl = url.slice(0, maxUrlLength)
+    const trimmedUrl = getOriginPath(url).slice(0, maxUrlLength)
 
     const maxNameLength = Math.max(0, maxUrlLength - trimmedUrl.length)
     const trimmedName = name.slice(0, maxNameLength)
@@ -204,8 +198,6 @@ export const getTxOrigin = (app?: Partial<SafeAppData>): string | undefined => {
 
   return origin
 }
-
-export const hasEnoughSignatures = (tx: SafeTransaction, safe: SafeInfo) => tx.signatures.size >= safe.threshold
 
 const multiSendInterface = Multi_send__factory.createInterface()
 
@@ -296,4 +288,18 @@ export const isTrustedTx = (tx: TransactionSummary) => {
     !isERC20Transfer(tx.txInfo.transferInfo) ||
     Boolean(tx.txInfo.transferInfo.trusted)
   )
+}
+
+export const isImitation = ({ txInfo }: TransactionSummary): boolean => {
+  return isTransferTxInfo(txInfo) && isERC20Transfer(txInfo.transferInfo) && Boolean(txInfo.transferInfo.imitation)
+}
+
+export const getSafeTransaction = async (safeTxHash: string, chainId: string, safeAddress: string) => {
+  const txId = `multisig_${safeAddress}_${safeTxHash}`
+
+  try {
+    return await getTransactionDetails(chainId, txId)
+  } catch (e) {
+    return undefined
+  }
 }

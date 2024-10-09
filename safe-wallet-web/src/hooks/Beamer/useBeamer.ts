@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
 
 import { useAppSelector } from '@/store'
-import { CookieType, selectCookies } from '@/store/cookiesSlice'
+import { CookieAndTermType, hasConsentFor } from '@/store/cookiesAndTermsSlice'
 import { loadBeamer, unloadBeamer, updateBeamer } from '@/services/beamer'
 import { useCurrentChain } from '@/hooks/useChains'
 
 const useBeamer = () => {
-  const cookies = useAppSelector(selectCookies)
-  const isBeamerEnabled = cookies[CookieType.UPDATES]
+  const isBeamerEnabled = useAppSelector((state) => hasConsentFor(state, CookieAndTermType.UPDATES))
   const chain = useCurrentChain()
 
   useEffect(() => {

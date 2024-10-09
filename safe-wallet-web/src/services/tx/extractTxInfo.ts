@@ -57,7 +57,13 @@ const extractTxInfo = (
         } else {
           return txDetails.txData?.value ?? '0'
         }
+      case 'TwapOrder':
+        return txDetails.txData?.value ?? '0'
       case 'SwapOrder':
+        return txDetails.txData?.value ?? '0'
+      case 'NativeStakingDeposit':
+      case 'NativeStakingValidatorsExit':
+      case 'NativeStakingWithdraw':
         return txDetails.txData?.value ?? '0'
       case 'Custom':
         return txDetails.txInfo.value
@@ -79,12 +85,20 @@ const extractTxInfo = (
           return txDetails.txInfo.transferInfo.tokenAddress
         }
       case 'SwapOrder':
-        const swapOrderTo = txDetails.txData?.to.value
-        // TODO: Remove assertion after type is corrected
-        if (!swapOrderTo) {
-          throw new Error('SwapOrder tx data does not have a `to` field')
+      case 'TwapOrder':
+        const orderTo = txDetails.txData?.to.value
+        if (!orderTo) {
+          throw new Error('Order tx data does not have a `to` field')
         }
-        return swapOrderTo
+        return orderTo
+      case 'NativeStakingDeposit':
+      case 'NativeStakingValidatorsExit':
+      case 'NativeStakingWithdraw':
+        const stakingTo = txDetails.txData?.to.value
+        if (!stakingTo) {
+          throw new Error('Staking tx data does not have a `to` field')
+        }
+        return stakingTo
       case 'Custom':
         return txDetails.txInfo.to.value
       case 'Creation':
