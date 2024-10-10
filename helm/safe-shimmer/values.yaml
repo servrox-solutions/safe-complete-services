@@ -1,7 +1,7 @@
 transaction_service:
   image:
     name: safeglobal/safe-transaction-service
-    tag: v4.37.1
+    tag: v5.9.2
   hostname: transaction-shimmer.smr.network
   etherium:
     node_url: https://json-rpc.evm.shimmer.network/

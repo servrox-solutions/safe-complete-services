@@ -1,7 +1,7 @@
 config_service:
   image:
     name: safeglobal/safe-config-service
-    tag: v2.76.0
+    tag: v2.87.0
   hostname: config-v2.smr.network
   django:
     debug: false
@@ -22,8 +22,8 @@ config_service:
 
 client_gateway:
   image:
-    name: 471128765712.dkr.ecr.eu-central-1.amazonaws.com/safe-gateway-service-v2
-    tag: 1.37.0
+    name: safeglobal/safe-client-gateway-nest
+    tag: v1.57.0
   hostname: gateway-v2.smr.network
   exchange_api:
     base_uri: https://api.exchangeratesapi.io/latest

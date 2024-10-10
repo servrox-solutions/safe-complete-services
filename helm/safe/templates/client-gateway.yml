@@ -69,10 +69,22 @@ spec:
               value: "12345"
             - name: JWT_TOKEN
               value: "12345"
+            - name: INFURA_API_KEY
+              value: "12345"
+            - name: PUSH_NOTIFICATIONS_API_PROJECT
+              value: "12345"
+            - name: PUSH_NOTIFICATIONS_API_SERVICE_ACCOUNT_CLIENT_EMAIL
+              value: servrox@servrox.solutions
+            - name: PUSH_NOTIFICATIONS_API_SERVICE_ACCOUNT_PRIVATE_KEY
+              value: "12345"
+            - name: RELAY_PROVIDER_API_KEY_ARBITRUM_ONE
+              value: ""
+            - name: RELAY_PROVIDER_API_KEY_BLAST
+              value: ""
             - name: RELAY_PROVIDER_API_KEY_GNOSIS_CHAIN
-              value: "12345"
+              value: ""
             - name: RELAY_PROVIDER_API_KEY_SEPOLIA
-              value: "12345"
+              value: ""
             {{- end }}
           resources:
             requests:

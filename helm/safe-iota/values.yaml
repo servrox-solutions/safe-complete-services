@@ -1,10 +1,10 @@
 transaction_service:
   image:
     name: safeglobal/safe-transaction-service
-    tag: v4.37.1
+    tag: v5.9.2
   hostname: transaction-iota.smr.network
   etherium:
-    node_url: https://json-rpc.evm.iotaledger.net
+    node_url: https://iota-mainnet-evm.blastapi.io/f47fc09f-b292-43f7-89cd-b7b3028f4878
     tracing_node_url: ""
     l2_network: 1
   django:
@@ -26,7 +26,7 @@ postgresql:
     resources:
       requests:
         cpu: 100m
-        memory: 256Mi
+        memory: 512Mi
     persistence:
       size: 8Gi
 
