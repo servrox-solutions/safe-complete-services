@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: safe
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://safe-v2.smr.network, https://safe.smr.network, http://localhost:3001, http://localhost:8080, https://safe.iotaledger.net"
 spec:
@@ -18,19 +18,7 @@ spec:
                 name: config
                 port:
                   number: 80
-{{/*    {{- range .Values.web_core.hostnames }}*/}}
-{{/*    - host: {{ . }}*/}}
-{{/*      http:*/}}
-{{/*        paths:*/}}
-{{/*          - path: /*/}}
-{{/*            pathType: Prefix*/}}
-{{/*            backend:*/}}
-{{/*              service:*/}}
-{{/*                name: web-core*/}}
-{{/*                port:*/}}
-{{/*                  number: 8080*/}}
-{{/*    {{- end }}*/}}
-    - host: {{ .Values.client_gateway.hostname }}        
+    - host: {{ .Values.client_gateway.hostname }}
       http:
         paths:
           - path: /
@@ -42,7 +30,6 @@ spec:
                   number: 3000
   tls:
     - hosts:
-{{/*      {{- .Values.web_core.hostnames | toYaml | nindent 8 }}*/}}
         - {{ .Values.config_service.hostname }}
         - {{ .Values.client_gateway.hostname }}
       secretName: tls-cert
