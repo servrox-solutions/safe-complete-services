@@ -92,6 +92,8 @@ spec:
               value: "unix:/gunicorn/gunicorn.socket"
             - name: GUNICORN_BIND_PORT
               value: "8000"
+            - name: GUNICORN_CMD_ARGS
+              value: "--workers=1 --threads=3"
             - name: MEDIA_URL
               value: https://{{ .hostname }}/static/media/
             - name: SECRET_KEY
