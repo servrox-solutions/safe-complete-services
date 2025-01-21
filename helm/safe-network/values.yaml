@@ -2,9 +2,10 @@ transaction_service:
   image:
     name: safeglobal/safe-transaction-service
     tag: v5.9.2
-  hostname: transaction-iota.smr.network
+  # required
+  hostname:
   etherium:
-    node_url: https://iota-mainnet-evm.blastapi.io/f47fc09f-b292-43f7-89cd-b7b3028f4878
+    node_url:
     tracing_node_url: ""
     l2_network: 1
   django:
@@ -12,6 +13,7 @@ transaction_service:
     superuser:
       username: admin
       email: servrox@1337.wf
+
 
 postgresql:
   fullnameOverride: postgresql
@@ -26,7 +28,7 @@ postgresql:
     resources:
       requests:
         cpu: 100m
-        memory: 512Mi
+        memory: 256Mi
     persistence:
       size: 8Gi
 

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "properties": {
+    "transaction_service": {
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "etherium": {
+          "properties": {
+            "node_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "node_name"
+          ]
+        }
+      },
+      "required": [
+        "hostname"
+      ]
+    }
+  }
+}
