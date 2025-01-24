@@ -8,12 +8,12 @@
         },
         "etherium": {
           "properties": {
-            "node_name": {
+            "node_url": {
               "type": "string"
             }
           },
           "required": [
-            "node_name"
+            "node_url"
           ]
         }
       },
