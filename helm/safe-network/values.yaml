@@ -2,7 +2,6 @@ transaction_service:
   image:
     name: safeglobal/safe-transaction-service
     tag: v5.9.2
-  # required
   hostname:
   etherium:
     node_url:

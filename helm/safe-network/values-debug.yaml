@@ -1,0 +1,4 @@
+transaction_service:
+  etherium:
+    node_url: http://nodeurl.com:1234
+  hostname: examplehost
