@@ -6,7 +6,7 @@
         "hostname": {
           "type": "string"
         },
-        "etherium": {
+        "ethereum": {
           "properties": {
             "node_url": {
               "type": "string"

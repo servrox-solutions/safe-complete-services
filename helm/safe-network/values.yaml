@@ -3,7 +3,7 @@ transaction_service:
     name: safeglobal/safe-transaction-service
     tag: v5.9.2
   hostname:
-  etherium:
+  ethereum:
     node_url:
     tracing_node_url: ""
     l2_network: 1

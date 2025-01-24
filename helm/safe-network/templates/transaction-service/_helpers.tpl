@@ -1,11 +1,11 @@
 {{- define "safe.transaction_service.common_env" -}}
 {{- with .Values.transaction_service }}
 - name: ETHEREUM_NODE_URL
-  value: {{ .etherium.node_url | quote }}
+  value: {{ .ethereum.node_url | quote }}
 - name: ETHEREUM_TRACING_NODE_URL
-  value: {{ .etherium.tracing_node_url | quote }}
+  value: {{ .ethereum.tracing_node_url | quote }}
 - name: ETH_L2_NETWORK
-  value: {{ .etherium.l2_network | quote }}
+  value: {{ .ethereum.l2_network | quote }}
 - name: PYTHONPATH
   value: /app/
 - name: DJANGO_SETTINGS_MODULE
