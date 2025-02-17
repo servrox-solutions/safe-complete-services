@@ -23,7 +23,7 @@ docker-compose up
 
 CONFIG_SERVICE_URI=http://config-nginx
 
-# The port exposed to the host by the nginx image.
+# The port exposed to the host by the nginx image
 
 NGINX_HOST_PORT=8090
 
