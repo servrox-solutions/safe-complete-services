@@ -1,0 +1,33 @@
+name: Trivy Optional
+
+on:
+  schedule:
+    - cron: "43 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trivy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  filesystem:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Scan filesystem with Trivy
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          exit-code: "1"
+          format: table
+          ignore-unfixed: true
+          scan-ref: .
+          scan-type: fs
+          severity: CRITICAL,HIGH
+          version: v0.70.0
