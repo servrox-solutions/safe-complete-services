@@ -109,7 +109,7 @@
     "eslint-config-next": "13.1.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
+    "eslint-plugin-unused-imports": "^4.0.0",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
     "pre-commit": "^2.0.0",
