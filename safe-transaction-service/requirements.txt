@@ -28,7 +28,7 @@ hiredis==3.3.1
 packaging>=21.0
 pillow==9.4.0
 psycogreen==1.0.2
-psycopg2==2.9.5
+psycopg2==2.9.12
 redis==7.4.0
 requests==2.28.2
 safe-eth-py[django]==7.21.0
