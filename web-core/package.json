@@ -33,7 +33,7 @@
     "lint"
   ],
   "dependencies": {
-    "@date-io/date-fns": "^2.15.0",
+    "@date-io/date-fns": "^3.0.0",
     "@emotion/cache": "^11.10.1",
     "@emotion/react": "^11.10.0",
     "@emotion/server": "^11.10.0",
