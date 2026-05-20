@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^8.2.0",
-    "@types/node": "^14.14.21",
+    "@types/node": "^24.0.0",
     "@types/yargs": "^15.0.10",
     "argv": "^0.0.2",
     "axios": "^0.21.1",
