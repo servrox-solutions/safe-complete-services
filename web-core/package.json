@@ -113,7 +113,7 @@
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
     "pre-commit": "^2.0.0",
-    "prettier": "^2.7.0",
+    "prettier": "^3.0.0",
     "ts-node": "^10.8.2",
     "ts-prune": "^0.10.3",
     "typechain": "^8.0.0",
