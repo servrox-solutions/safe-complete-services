@@ -38,7 +38,7 @@
     "url": "https://github.com/rmeissner/hardhat-safe-deployer/issues"
   },
   "devDependencies": {
-    "@types/mocha": "^8.2.0",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^24.0.0",
     "@types/yargs": "^15.0.10",
     "argv": "^0.0.2",
