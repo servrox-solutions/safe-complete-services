@@ -5,7 +5,7 @@ django==4.1.5
 django-cache-memoize==0.2.1
 django-celery-beat==2.4.0
 django-cors-headers==4.9.0
-django-db-geventpool==4.0.1
+django-db-geventpool==4.0.8
 django-debug-toolbar
 django-debug-toolbar-force
 django-environ==0.9.0
