@@ -118,7 +118,7 @@
     "ts-prune": "^0.10.3",
     "typechain": "^8.0.0",
     "typescript": "6.0.3",
-    "typescript-plugin-css-modules": "^4.1.1",
+    "typescript-plugin-css-modules": "^5.0.0",
     "whatwg-fetch": "3.6.20"
   }
 }
